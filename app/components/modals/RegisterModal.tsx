@@ -1,27 +1,30 @@
 // 'use client';
 
+// import axios from 'axios';
+// import { AiFillGithub } from 'react-icons/ai';
 // import { FcGoogle } from "react-icons/fc";
-// import { use, useCallback, useState } from "react";
+// import { useCallback, useState } from "react";
+
 // import {
 //   FieldValues,
 //   SubmitHandler,
 //   useForm
 // } from 'react-hook-form';
 
-// import useLoginModal from "@/app/hooks/useLoginModal";
-// import Modal from "./modal";
-// import Heading from "../heading";
-// import TextInput from "../inputs/textInput";
-// import toast from "react-hot-toast";
-// import Button from "../button";
 // import useRegisterModal from "@/app/hooks/useRegisterModal";
-// import { useRouter } from "next/navigation";
+// import Modal from "./Modal";
+// // import Heading from "../heading";
+// // import Input from "../inputs/textInput";
+// // import toast from "react-hot-toast";
+// // import Button from "../button";
+// // import useLoginModal from "@/app/hooks/useLoginModal";
+// // import { useRouter } from "next/navigation";
 
-// const LoginModal = () => {
-//   const router = useRouter()
+// const RegisterModal = () => {
 //   const registerModal = useRegisterModal();
-//   const loginModal = useLoginModal();
-//   const [isLoading, setIsLoading] = useState(false);
+// //   const loginModal = useLoginModal();
+//    const [isLoading, setIsLoading] = useState(false);
+// //   const router = useRouter()
 
 //   const {
 //     register,
@@ -32,38 +35,38 @@
 //     }
 //   } = useForm<FieldValues>({
 //     defaultValues: {
+//       name: '',
 //       email: '',
 //       password: ''
 //   }
 //   });
 
-//   const onSubmit: SubmitHandler<FieldValues> = (data) => {
+//   const onSubmit: SubmitHandler<FieldValues> = async (data) => {
 //     toast.success('Logged in successfully!');
 //     console.log('data:', data);
 //     reset();
-//     router.refresh();
-//     loginModal.onClose();
-//   }
+//     registerModal.onClose();
+//   };
 
 //   const toggle = useCallback(() => {
-//     loginModal.onClose();
-//     registerModal.onOpen();
+//     registerModal.onClose();
+//     loginModal.onOpen();
 //   }, [loginModal, registerModal]);
 
 //   const handleGoogleSignIn = async () => {
+
 //     toast.success('Logged in with Google');
-//     reset();
-//     loginModal.onClose();
+//     registerModal.onClose();
 //   };
 
 //   const bodyContent = (
 //     <div className="flex flex-col gap-4">
 //       <Heading
-//         title="Welcome back"
-//         subtitle="Login to your account"
+//         title="Welcome"
+//         subtitle="Create an account"
 //         center
 //       />
-//       <TextInput
+//       <Input
 //         id = "email"
 //         label="Email"
 //         disabled={isLoading}
@@ -71,7 +74,15 @@
 //         errors={errors}
 //         required
 //       />
-//       <TextInput
+//       <Input
+//         id = "name"
+//         label="Name"
+//         disabled={isLoading}
+//         register={register}
+//         errors={errors}
+//         required
+//       />
+//       <Input
 //         id = "password"
 //         type="password"
 //         label="Password"
@@ -81,7 +92,7 @@
 //         required
 //       />
 //     </div>
-//   )
+//   );
 
 //   const footerContent = (
 //     <div className="flex flex-col gap-4 mt-3">
@@ -92,16 +103,16 @@
 //         icon={FcGoogle}
 //         onClick={handleGoogleSignIn}
 //       />
-//       <div className="text-neutral-500 text-center mt-4 font-light">
+//       <div className="text-neutral-500 text-body text-center mt-4 font-light">
 //         <div className="flex flex-row items-center gap-2 justify-center">
 //           <div>
-//             Don't have an account?
+//             Already have and account?
 //           </div>
 //           <div 
-//             className="text-neutral-800 cursor-pointer hover:underline"
+//             className="text-black text-body cursor-pointer hover:underline"
 //             onClick={toggle}
 //           >
-//             Create an account
+//             Log in
 //           </div>
 //         </div>
 //       </div>
@@ -112,10 +123,10 @@
 //   return ( 
 //     <Modal
 //       disabled = {isLoading}
-//       isOpen = {loginModal.isOpen}
-//       title="Login"
+//       isOpen = {registerModal.isOpen}
+//       title="Register"
 //       actionLabel="Continue"
-//       onClose={loginModal.onClose}
+//       onClose={registerModal.onClose}
 //       onSubmit={handleSubmit(onSubmit)}
 //       body={bodyContent}
 //       footer={footerContent}
@@ -123,4 +134,4 @@
 //    );
 // }
  
-// export default LoginModal;
+// export default RegisterModal;

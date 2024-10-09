@@ -3,17 +3,8 @@ import localFont from "next/font/local";
 import "./globals.css";
 import {Nunito} from "next/font/google"
 import Navbar from "./components/navbar/Navbar";
-
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
-});
+import Modal from "./components/modals/Modal";
+import RegisterModal from "./components/modals/RegisterModal";
 
 const font = Nunito({
   subsets: ["latin"],
@@ -33,7 +24,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={font.className}>
         <Navbar />
-        {children}
+        <div className="pt-16"> {/* Adjust pt-16 based on your navbar height */}
+          {children}
+        </div>
       </body>
 
     </html>

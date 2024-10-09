@@ -2,10 +2,11 @@
 import { useState, useCallback } from 'react';
 import { AiOutlineMenu } from 'react-icons/ai';
 import MenuItem from './MenuItem';
+import { useRouter } from 'next/navigation'
 
 const UserMenu = () => {
     const [isOpen, setIsOpen] = useState(false);
-
+    const router = useRouter();
     const toggleOpen = useCallback(() => {
         setIsOpen((value) => !value);
     }, []);
@@ -31,7 +32,7 @@ const UserMenu = () => {
                     About
                 </div>
                 <div
-                    onClick={() => {}}
+                    onClick={() => router.push('/ride')}
                     className="
                     hidden 
                     md:block
@@ -49,7 +50,7 @@ const UserMenu = () => {
                     Ride
                 </div>
                 <div
-                    onClick={() => {}}
+                    onClick={() => { }}
                     className="
                     hidden 
                     md:block

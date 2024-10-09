@@ -1,5 +1,12 @@
+import Container from "./components/Container";
+
 export default function Home() {
   return (
-    <div className="text-rose-500 text-2xl">Hello TrueFare!</div>
-  )
+    <Container>
+      <div className="flex flex-col items-center">
+        <div className="text-h1 text-center">
+        </div>
+      </div>
+    </Container>
+  );
 }
