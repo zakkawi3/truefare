@@ -40,8 +40,10 @@ export default function RootLayout({
           <ToasterProvider />
           <RegisterModal/>
           <Navbar />
+          <div className="pt-16"> {/* Adjust pt-16 based on your navbar height */}
+          {children}
+        </div>
         </ClientOnly>
-        {children}
       </body>
 
     </html>
