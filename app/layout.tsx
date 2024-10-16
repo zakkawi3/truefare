@@ -3,8 +3,21 @@ import localFont from "next/font/local";
 import "./globals.css";
 import {Nunito} from "next/font/google"
 import Navbar from "./components/navbar/Navbar";
+import ClientOnly from "./components/ClientOnly";
 import Modal from "./components/modals/Modal";
 import RegisterModal from "./components/modals/RegisterModal";
+import ToasterProvider from "./providers/ToasterProvider";
+
+const geistSans = localFont({
+  src: "./fonts/GeistVF.woff",
+  variable: "--font-geist-sans",
+  weight: "100 900",
+});
+const geistMono = localFont({
+  src: "./fonts/GeistMonoVF.woff",
+  variable: "--font-geist-mono",
+  weight: "100 900",
+});
 
 const font = Nunito({
   subsets: ["latin"],
@@ -21,12 +34,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en"> 
       <body className={font.className}>
-        <Navbar />
-        <div className="pt-16"> {/* Adjust pt-16 based on your navbar height */}
-          {children}
-        </div>
+        <ClientOnly>
+          <ToasterProvider />
+          <RegisterModal/>
+          <Navbar />
+        </ClientOnly>
+        {children}
       </body>
 
     </html>
