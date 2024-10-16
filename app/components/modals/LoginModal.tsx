@@ -10,18 +10,18 @@ import {
   useForm
 } from 'react-hook-form';
 
-import useRegisterModal from '@/app/hooks/useRegisterModal';
+import useLoginModal from '@/app/hooks/useLoginModal';
 import { error } from 'console';
 import Modal from './Modal';
 import Heading from '../Heading';
 import Input from '../inputs/Input';
 import toast from 'react-hot-toast';
 import Button from '../Button';
-import useLoginModal from '@/app/hooks/useLoginModal';
+import useRegisterModal from '@/app/hooks/useRegisterModal';
 
-const RegisterModal = () => {
-    const loginModal = useLoginModal();
-  const registerModal = useRegisterModal();
+const LoginModal = () => {
+    const registerModal = useRegisterModal();
+  const loginModal = useLoginModal();
   const [isLoading, setIsLoading] = useState(false);
 
   const {
@@ -41,7 +41,7 @@ const RegisterModal = () => {
     
     axios.post('/api/register', data)
         .then(() => {
-            registerModal.onClose();
+            loginModal.onClose();
         })
         .catch((error) => {
             toast.error('Something went wrong');
@@ -66,14 +66,6 @@ const RegisterModal = () => {
             required
         />
         <Input 
-            id="name"
-            label="Name"
-            disabled={isLoading}
-            register={register}
-            errors={errors}
-            required
-        />
-        <Input 
             id="password"
             type="password"
             label="Password"
@@ -90,7 +82,7 @@ const RegisterModal = () => {
         <hr />
         <Button 
             outline
-            label="Continue with Google"
+            label="Login with Google"
             icon={FcGoogle}
             onClick={() => {}}
         />
@@ -110,20 +102,20 @@ const RegisterModal = () => {
         >
             <div className=" justify-center text-center flex flex-row items-center gap-2">
                 <div>
-                    Already have an account?
+                    Don't have an account?
                 </div>
                 <div
-                      onClick={() => {
-                        registerModal.onClose();
-                        loginModal.onOpen();
-                        }}
+                    onClick={() => {
+                        loginModal.onClose();
+                        registerModal.onOpen();
+                      }}
                     className="
                         text-neutral-800
                         cursor-pointer
                         hover:underline
                     "
                 >
-                    Log In
+                    Register
                 </div>
             </div>
         </div>
@@ -133,10 +125,10 @@ const RegisterModal = () => {
   return (
     <Modal
         disabled={isLoading}
-        isOpen={registerModal.isOpen}
-        title="Register"
-        actionLabel="Continue"
-        onClose={registerModal.onClose}
+        isOpen={loginModal.isOpen}
+        title="Login"
+        actionLabel="Login"
+        onClose={loginModal.onClose}
         onSubmit={handleSubmit(onSubmit)}
         body={bodyContent}
         footer={footerContent}
@@ -144,4 +136,4 @@ const RegisterModal = () => {
   );
 };
 
-export default RegisterModal;
+export default LoginModal;

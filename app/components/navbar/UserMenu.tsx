@@ -4,9 +4,11 @@ import { AiOutlineMenu } from 'react-icons/ai';
 import { useRouter } from 'next/navigation'; // Import useRouter hook
 import MenuItem from './MenuItem';
 import useRegisterModal from '@/app/hooks/useRegisterModal';
+import useLoginModal from '@/app/hooks/useLoginModal';
 
 const UserMenu = () => {
     const registerModal = useRegisterModal();
+    const loginModal = useLoginModal();
     const [isOpen, setIsOpen] = useState(false);
     const router = useRouter();
 
@@ -26,7 +28,6 @@ const UserMenu = () => {
                     className="
                     hidden 
                     md:block
-                    text-blue-900
                     text-sm
                     font-semibold
                     py-3
@@ -124,7 +125,7 @@ const UserMenu = () => {
                 >
                     <div className="flex flex-col cursor-pointer">
                         <MenuItem
-                            onClick={registerModal.onOpen}
+                            onClick={loginModal.onOpen}
                             label="Login"
                         />
                         <MenuItem
