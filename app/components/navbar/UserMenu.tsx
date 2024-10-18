@@ -41,7 +41,7 @@ const UserMenu = () => {
                     Ride
                 </div>
                 <div
-                    onClick={() => {}}
+                    onClick={() => handleNavigate('/drive')}
                     className="
                     hidden 
                     md:block
