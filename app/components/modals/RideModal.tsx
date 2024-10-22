@@ -48,35 +48,27 @@ const RideModal = () => {
 
   const bodyContent = (
     <div className="flex flex-col gap-4">
-      <Input 
-        id="distance"
-        label="Distance"
-        disabled={isLoading}
-        register={register}
-        errors={errors}
-        required
-      />
-      <Input 
-        id="pay"
-        type="text"
-        label="Pay"
-        disabled={isLoading}
-        register={register}
-        errors={errors}
-        required
-      />
+      <div id="distance" className="text-lg">
+        <label className="font-medium">Distance:</label>
+        <p>{}</p>
+      </div>
+      <div id="pay" className="text-lg">
+        <label className="font-medium">Pay:</label>
+        <p>{}</p>
+      </div>
     </div>
   );
+  
 
   const footerContent = (
     <div className='flex flex-col gap-4 mt-4'>
         <hr />
         <Button 
-            label="Reject"
-            onClick={() => {
-                rideModal.onClose(); // Close the modal on Reject button click
-            }}
-            className="bg-red-500 text-white rounded-lg hover:bg-red-600" // Optionally add classes for styling
+          label="Reject"
+          onClick={() => {
+            rideModal.onClose(); // Close the modal on Reject button click
+          }}
+          className="bg-red-500 text-white border-red-500 hover:bg-red-600"
         />
         <div
             className="
@@ -95,7 +87,7 @@ const RideModal = () => {
         disabled={isLoading}
         isOpen={rideModal.isOpen}
         title="Ride"
-        actionLabel="Ride"
+        actionLabel="Accept"
         onClose={rideModal.onClose}
         onSubmit={handleSubmit(onSubmit)}
         body={bodyContent}

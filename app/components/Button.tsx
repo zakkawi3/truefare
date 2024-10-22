@@ -9,6 +9,7 @@ interface ButtonProps {
   outline?: boolean;
   small?: boolean;
   icon?: IconType;
+  className?: string;
 }
 
 const Button: React.FC<ButtonProps> = ({
@@ -17,7 +18,8 @@ const Button: React.FC<ButtonProps> = ({
   disabled,
   outline,
   small,
-  icon: Icon
+  icon: Icon,
+  className // Add this line
 }) => {
   return (
     <button
@@ -38,6 +40,7 @@ const Button: React.FC<ButtonProps> = ({
         ${small ? 'text-sm' : 'text-md'}
         ${small ? 'font-light' : 'font-semibold'}
         ${small ? 'border-[1px]' : 'border-2'}
+        ${className} // Apply custom class names
       `}
     >
       {Icon && (
@@ -54,5 +57,6 @@ const Button: React.FC<ButtonProps> = ({
     </button>
   );
 };
+
 
 export default Button;
