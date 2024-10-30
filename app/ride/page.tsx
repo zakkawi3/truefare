@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Container from '../components/Container';
 import { FaLocationArrow, FaTimes } from 'react-icons/fa';
 import { useJsApiLoader, GoogleMap, Marker, DirectionsRenderer, Autocomplete } from '@react-google-maps/api';
+import { io } from 'socket.io-client';
 
 const center = { lat: 33.7501, lng: -84.3880 }; // Default map center
 

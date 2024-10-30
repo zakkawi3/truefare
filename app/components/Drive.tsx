@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Container from './Container'; // Adjust the path if needed
 import useRideModal from '@/app/hooks/useRideModal'; // Import the useRideModal hook
+import { io } from 'socket.io-client';
 
 const Drive = () => {
   const [isDriving, setIsDriving] = useState(false); // State to track if driving has started
@@ -19,6 +20,21 @@ const Drive = () => {
   const handleTestModal = () => {
     rideModal.onOpen(); // Open the RideModal
   };
+
+  useEffect(() => {
+    // Connect to WebSocket server
+    const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4000');
+
+    // Listen for rideAssigned event
+    socket.on('rideAssigned', () => {
+      rideModal.onOpen(); // Show the modal on notification
+    });
+
+    // Clean up on component unmount
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   return (
     <Container>
