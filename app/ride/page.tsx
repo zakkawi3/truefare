@@ -1,19 +1,19 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import Container from '../components/Container';
-import { FaLocationArrow, FaTimes } from 'react-icons/fa';
+import { FaLocationArrow } from 'react-icons/fa';
 import { useJsApiLoader, GoogleMap, Marker, DirectionsRenderer, Autocomplete } from '@react-google-maps/api';
-import { io } from 'socket.io-client';
+import useRidePriceModal from '../hooks/useRidePriceModal';
 
 const center = { lat: 33.7501, lng: -84.3880 }; // Default map center
 
 export default function Ride() {
-  const [pickupNow, setPickupNow] = useState(true);
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [directionsResponse, setDirectionsResponse] = useState<google.maps.DirectionsResult | null>(null);
   const [distance, setDistance] = useState('');
   const [duration, setDuration] = useState('');
+  const ridePriceModal = useRidePriceModal(); // Use the ride modal hook
 
   const originRef = useRef<HTMLInputElement>(null);
   const destinationRef = useRef<HTMLInputElement>(null);
@@ -24,8 +24,6 @@ export default function Ride() {
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string,
     libraries: ['places'],
   });
-
-  const togglePickupNow = () => setPickupNow(!pickupNow);
 
   async function calculateRoute() {
     if (!originRef.current?.value || !destinationRef.current?.value) {
@@ -73,6 +71,10 @@ export default function Ride() {
     }
   }
 
+  const handleTestModal = () => {
+    ridePriceModal.onOpen(); // Open the RideModal
+  };
+
   return (
     <Container>
       <div className="flex flex-row justify-between w-full h-full p-8">
@@ -114,26 +116,6 @@ export default function Ride() {
             )}
           </div>
 
-          <div className="flex items-center space-x-2">
-            <label className="text-sm font-medium">Pickup Now</label>
-            <input
-              type="checkbox"
-              className="toggle-checkbox"
-              checked={pickupNow}
-              onChange={togglePickupNow}
-            />
-          </div>
-
-          {!pickupNow && (
-            <div className="flex flex-col space-y-2">
-              <label className="text-sm font-medium">Select Pickup Date and Time</label>
-              <input
-                type="datetime-local"
-                className="border border-gray-300 rounded-lg p-2"
-              />
-            </div>
-          )}
-
           <div className="flex space-x-4 mt-4">
             <button
               className="bg-blue-500 text-white rounded-lg py-2 px-4 hover:bg-blue-600"
@@ -154,11 +136,18 @@ export default function Ride() {
               <FaLocationArrow className="mr-2" />
               Re-center
             </button>
+            <button
+              className="bg-green-500 text-white rounded-lg py-2 px-4 hover:bg-green-600"
+              onClick={handleTestModal}
+            >
+              Test Modal
+            </button>
           </div>
 
           <div className="mt-4">
             <p className="text-sm">Distance: {distance}</p>
             <p className="text-sm">Duration: {duration}</p>
+            <p className="text-sm">Price: {"$10.00"}</p>
           </div>
         </div>
 
