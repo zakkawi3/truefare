@@ -8,13 +8,12 @@ import {
   useForm
 } from 'react-hook-form';
 
-import useRideModal from '@/app/hooks/useRideModal';
+import useRidePriceModal from '@/app/hooks/useRidePriceModal';
 import Modal from './Modal';
 import toast from 'react-hot-toast';
-import Button from '../Button';
 
-const RideModal = () => {
-  const rideModal = useRideModal();
+const RidePriceModal = () => {
+  const ridePriceModal = useRidePriceModal();
   const [isLoading, setIsLoading] = useState(false);
 
   const {
@@ -33,7 +32,7 @@ const RideModal = () => {
     
     axios.post('/api/register', data)
         .then(() => {
-            rideModal.onClose();
+          ridePriceModal.onClose();
         })
         .catch((error) => {
             toast.error('Something went wrong');
@@ -49,48 +48,28 @@ const RideModal = () => {
         <label className="font-medium">Distance:</label>
         <p>{}</p>
       </div>
+      <div id="distance" className="text-lg">
+        <label className="font-medium">Time:</label>
+        <p>{}</p>
+      </div>
       <div id="pay" className="text-lg">
-        <label className="font-medium">Pay:</label>
+        <label className="font-medium">Price:</label>
         <p>{}</p>
       </div>
     </div>
   );
-  
-
-  const footerContent = (
-    <div className='flex flex-col gap-4 mt-4'>
-        <hr />
-        <Button 
-          label="Reject"
-          onClick={() => {
-            rideModal.onClose(); // Close the modal on Reject button click
-          }}
-          className="bg-red-500 text-white border-red-500 hover:bg-red-600"
-        />
-        <div
-            className="
-                text-neutral-500
-                text-center
-                mt-4
-                font-light
-            "
-        >
-        </div>
-    </div>
-  )
  
   return (
     <Modal
         disabled={isLoading}
-        isOpen={rideModal.isOpen}
-        title="Ride"
-        actionLabel="Accept"
-        onClose={rideModal.onClose}
+        isOpen={ridePriceModal.isOpen}
+        title="Ride Information"
+        actionLabel="Continue"
+        onClose={ridePriceModal.onClose}
         onSubmit={handleSubmit(onSubmit)}
         body={bodyContent}
-        footer={footerContent}
     />
   );
 };
 
-export default RideModal;
+export default RidePriceModal;
