@@ -5,6 +5,7 @@ import Container from '../components/Container';
 import { FaLocationArrow } from 'react-icons/fa';
 import { useJsApiLoader, GoogleMap, Marker, DirectionsRenderer, Autocomplete } from '@react-google-maps/api';
 import useRidePriceModal from '../hooks/useRidePriceModal';
+import useDriverAssignmentModal from '../hooks/useDriverAssignmentModal';
 
 const center = { lat: 33.7501, lng: -84.3880 }; // Default map center
 
@@ -14,6 +15,7 @@ export default function Ride() {
   const [distance, setDistance] = useState('');
   const [duration, setDuration] = useState('');
   const ridePriceModal = useRidePriceModal(); // Use the ride modal hook
+  const driverAssignmentModal = useDriverAssignmentModal();
 
   const originRef = useRef<HTMLInputElement>(null);
   const destinationRef = useRef<HTMLInputElement>(null);
@@ -72,7 +74,11 @@ export default function Ride() {
   }
 
   const handleTestModal = () => {
-    ridePriceModal.onOpen(); // Open the RideModal
+    ridePriceModal.onOpen(); 
+  };
+
+  const handleTestModalTwo = () => {
+    driverAssignmentModal.onOpen(); 
   };
 
   return (
@@ -141,6 +147,12 @@ export default function Ride() {
               onClick={handleTestModal}
             >
               Test Modal
+            </button>
+            <button
+              className="bg-green-500 text-white rounded-lg py-2 px-4 hover:bg-green-600"
+              onClick={handleTestModalTwo}
+            >
+              Test Modal 2
             </button>
           </div>
 

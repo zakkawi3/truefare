@@ -8,6 +8,8 @@ import ToasterProvider from "./providers/ToasterProvider";
 import LoginModal from "./components/modals/LoginModal";
 import RideModal from "./components/modals/RideModal";
 import RidePriceModal from "./components/modals/RidePriceModal";
+import SearchingModal from "./components/modals/SearchingModal";
+import DriverAssignmentModal from "./components/modals/DriverAssignmentModal";
 
 const font = Nunito({
   subsets: ["latin"],
@@ -32,6 +34,8 @@ export default function RootLayout({
           <LoginModal />
           <RideModal />
           <RidePriceModal />
+          <SearchingModal />
+          <DriverAssignmentModal />
           <Navbar />
           <div className="pt-16"> {/* Adjust pt-16 based on your navbar height */}
           {children}

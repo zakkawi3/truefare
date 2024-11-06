@@ -2,14 +2,11 @@
 
 import { useState } from 'react';
 import { FieldValues, SubmitHandler, useForm } from 'react-hook-form';
-import useRidePriceModal from '@/app/hooks/useRidePriceModal';
-import useSearchingModal from '@/app/hooks/useSearchingModal'; // Import SearchingModal hook
+import useDriverAssignmentModal from '@/app/hooks/useDriverAssignmentModal';
 import Modal from './Modal';
-import toast from 'react-hot-toast';
 
-const RidePriceModal = () => {
-  const ridePriceModal = useRidePriceModal();
-  const searchingModal = useSearchingModal(); // Initialize SearchingModal
+const DriverAssignment = () => {
+  const driverAssignmentModal = useDriverAssignmentModal();
   const [isLoading, setIsLoading] = useState(false);
 
   const {
@@ -27,8 +24,7 @@ const RidePriceModal = () => {
     setIsLoading(true);
 
     // Close RidePriceModal and open SearchingModal
-    ridePriceModal.onClose();
-    searchingModal.onOpen();
+    driverAssignmentModal.onClose();
     
     setIsLoading(false);
   };
@@ -36,15 +32,23 @@ const RidePriceModal = () => {
   const bodyContent = (
     <div className="flex flex-col gap-4">
       <div id="distance" className="text-lg">
-        <label className="font-medium">Distance:</label>
+        <label className="font-medium">Name:</label>
         <p>{}</p>
       </div>
       <div id="time" className="text-lg">
-        <label className="font-medium">Time:</label>
+        <label className="font-medium">ETA:</label>
         <p>{}</p>
       </div>
       <div id="pay" className="text-lg">
-        <label className="font-medium">Price:</label>
+        <label className="font-medium">Car Make:</label>
+        <p>{}</p>
+      </div>
+      <div id="pay" className="text-lg">
+        <label className="font-medium">Car Model:</label>
+        <p>{}</p>
+      </div>
+      <div id="pay" className="text-lg">
+        <label className="font-medium">License Plate:</label>
         <p>{}</p>
       </div>
     </div>
@@ -53,14 +57,15 @@ const RidePriceModal = () => {
   return (
     <Modal
       disabled={isLoading}
-      isOpen={ridePriceModal.isOpen}
-      title="Ride Information"
-      actionLabel="Continue"
-      onClose={ridePriceModal.onClose}
+      isOpen={driverAssignmentModal.isOpen}
+      title="Driver Information"
+      actionLabel="Cancel"
+      onClose={driverAssignmentModal.onClose}
       onSubmit={handleSubmit(onSubmit)}
       body={bodyContent}
+      actionClassName="bg-red-500 text-white hover:bg-red-600 border-red-500" 
     />
   );
 };
 
-export default RidePriceModal;
+export default DriverAssignment;
