@@ -3,25 +3,45 @@
 import React, { useState } from 'react';
 import Container from './Container'; // Adjust the path if needed
 import useRideModal from '@/app/hooks/useRideModal'; // Import the useRideModal hook
+import axios from 'axios';
 
 const Drive = () => {
   const [isDriving, setIsDriving] = useState(false); // State to track if driving has started
   const [location, setLocation] = useState<{ lat: number | null; lng: number | null }>({ lat: null, lng: null });
   const rideModal = useRideModal(); // Use the ride modal hook
 
-
   const handleStartDrive = () => {
     setIsDriving(true); // Switch to "driving" mode
 
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
+        async (position) => {
+          const latitude = position.coords.latitude;
+          const longitude = position.coords.longitude;
+          
           setLocation({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
+            lat: latitude,
+            lng: longitude,
           });
-          console.log('Driver location:', position.coords);
-          // Here, you might send the location to your backend server or Google Maps API
+          
+          console.log('Driver location:', { latitude, longitude });
+
+          try {
+            // Replace 'driverID' with the actual ID of the driver
+            const driverID = 12345;
+            
+            // Send location to backend
+            const response = await axios.post('http://localhost:3000/api/createDriver', {
+              driverID,
+              latitude,
+              longitude,
+            });
+            
+            console.log('Driver created:', response.data);
+          } catch (error) {
+            console.error('Error creating driver:', error);
+            alert('Failed to register driver on the server.');
+          }
         },
         (error) => {
           console.error('Error getting location:', error);

@@ -1,11 +1,14 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Container from '../components/Container';
 import { FaLocationArrow } from 'react-icons/fa';
 import { useJsApiLoader, GoogleMap, Marker, DirectionsRenderer, Autocomplete } from '@react-google-maps/api';
 import useRidePriceModal from '../hooks/useRidePriceModal';
 import useDriverAssignmentModal from '../hooks/useDriverAssignmentModal';
+import axios from 'axios';
+import { io } from 'socket.io-client';
+import SearchingModal from '../components/modals/SearchingModal';
 
 const center = { lat: 33.7501, lng: -84.3880 }; // Default map center
 
@@ -17,6 +20,7 @@ export default function Ride() {
   const [cost, setCost] = useState('');
   const ridePriceModal = useRidePriceModal(); // Use the ride modal hook
   const driverAssignmentModal = useDriverAssignmentModal();
+  const [originCoords, setOriginCoords] = useState<{ lat: number, lng: number } | null>(null);
 
   const originRef = useRef<HTMLInputElement>(null);
   const destinationRef = useRef<HTMLInputElement>(null);
@@ -27,6 +31,26 @@ export default function Ride() {
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string,
     libraries: ['places'],
   });
+
+  useEffect(() => {
+    const socket = io('http://localhost:3001'); // Update with your backend URL if different
+    socket.on('connect', () => {
+      console.log('Connected to WebSocket server');
+    });
+
+    socket.on('rideAssigned', (data) => {
+      console.log('Ride assigned:', data);
+      driverAssignmentModal.onOpen(); // Open the modal when a ride is assigned
+    });
+
+    socket.on('disconnect', () => {
+      console.log('Disconnected from WebSocket server');
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [driverAssignmentModal]);
 
   async function calculateRoute() {
     if (!originRef.current?.value || !destinationRef.current?.value) {
@@ -46,12 +70,21 @@ export default function Ride() {
     setDistance(distanceText);
     setDuration(durationText);
 
-    const distanceValue = parseFloat(distanceText.replace(/[^\d.]/g, '')); // Extract numeric value
-    const ratePerMile = 1.5; // Rate per mile
+    // Calculate price based on distance
+    const distanceValue = parseFloat(distanceText.replace(/[^\d.]/g, ''));
+    const ratePerMile = 1.5;
     const calculatedCost = `$${(distanceValue * ratePerMile).toFixed(2)}`;
     setCost(calculatedCost);
 
     ridePriceModal.onOpen(distanceText, durationText, calculatedCost); 
+
+    // Extract origin coordinates and set them
+    const originPlace = originAutoCompleteRef.current?.getPlace();
+    if (originPlace && originPlace.geometry) {
+      const lat = originPlace.geometry.location.lat();
+      const lng = originPlace.geometry.location.lng();
+      setOriginCoords({ lat, lng });
+    }
   }
 
   function clearRoute() {
@@ -200,6 +233,10 @@ export default function Ride() {
           </div>
         </div>
       </div>
+      {/* Render SearchingModal only when originCoords is set */}
+      {originCoords && (
+        <SearchingModal userCoords={originCoords} />
+      )}
     </Container>
   );
 }
