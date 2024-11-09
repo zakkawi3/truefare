@@ -14,6 +14,7 @@ export default function Ride() {
   const [directionsResponse, setDirectionsResponse] = useState<google.maps.DirectionsResult | null>(null);
   const [distance, setDistance] = useState('');
   const [duration, setDuration] = useState('');
+  const [cost, setCost] = useState('');
   const ridePriceModal = useRidePriceModal(); // Use the ride modal hook
   const driverAssignmentModal = useDriverAssignmentModal();
 
@@ -40,8 +41,17 @@ export default function Ride() {
     });
 
     setDirectionsResponse(results);
-    setDistance(results.routes[0].legs[0].distance.text);
-    setDuration(results.routes[0].legs[0].duration.text);
+    const distanceText = results.routes[0].legs[0].distance.text;
+    const durationText = results.routes[0].legs[0].duration.text;
+    setDistance(distanceText);
+    setDuration(durationText);
+
+    const distanceValue = parseFloat(distanceText.replace(/[^\d.]/g, '')); // Extract numeric value
+    const ratePerMile = 1.5; // Rate per mile
+    const calculatedCost = `$${(distanceValue * ratePerMile).toFixed(2)}`;
+    setCost(calculatedCost);
+
+    ridePriceModal.onOpen(distanceText, durationText, calculatedCost); 
   }
 
   function clearRoute() {
@@ -159,7 +169,7 @@ export default function Ride() {
           <div className="mt-4">
             <p className="text-sm">Distance: {distance}</p>
             <p className="text-sm">Duration: {duration}</p>
-            <p className="text-sm">Price: {"$10.00"}</p>
+            <p className="text-sm">Price: {cost}</p>
           </div>
         </div>
 

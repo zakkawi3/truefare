@@ -36,7 +36,7 @@ const DriverAssignment = () => {
         <p>{}</p>
       </div>
       <div id="time" className="text-lg">
-        <label className="font-medium">ETA:</label>
+        <label className="font-medium">Estimated Dropoff Time:</label>
         <p>{}</p>
       </div>
       <div id="pay" className="text-lg">
