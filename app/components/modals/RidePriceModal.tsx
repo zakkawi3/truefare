@@ -11,6 +11,7 @@ const RidePriceModal = () => {
   const ridePriceModal = useRidePriceModal();
   const searchingModal = useSearchingModal(); // Initialize SearchingModal
   const [isLoading, setIsLoading] = useState(false);
+  const { isOpen, distance, duration, cost } = ridePriceModal;
 
   const {
     register,
@@ -37,15 +38,15 @@ const RidePriceModal = () => {
     <div className="flex flex-col gap-4">
       <div id="distance" className="text-lg">
         <label className="font-medium">Distance:</label>
-        <p>{}</p>
+        <p>{distance}</p>
       </div>
       <div id="time" className="text-lg">
         <label className="font-medium">Time:</label>
-        <p>{}</p>
+        <p>{duration}</p>
       </div>
       <div id="pay" className="text-lg">
         <label className="font-medium">Price:</label>
-        <p>{}</p>
+        <p>{cost}</p>
       </div>
     </div>
   );
