@@ -37,16 +37,13 @@ const RidePriceModal = () => {
   const bodyContent = (
     <div className="flex flex-col gap-4">
       <div id="distance" className="text-lg">
-        <label className="font-medium">Distance:</label>
-        <p>{distance}</p>
+        <label className="font-medium">Distance: {distance}</label> 
       </div>
       <div id="time" className="text-lg">
-        <label className="font-medium">Time:</label>
-        <p>{duration}</p>
+        <label className="font-medium">Time: {duration}</label>
       </div>
       <div id="pay" className="text-lg">
-        <label className="font-medium">Price:</label>
-        <p>{cost}</p>
+        <label className="font-medium">Price: {cost}</label>
       </div>
     </div>
   );
@@ -56,7 +53,7 @@ const RidePriceModal = () => {
       disabled={isLoading}
       isOpen={ridePriceModal.isOpen}
       title="Ride Information"
-      actionLabel="Continue"
+      actionLabel="Confirm Ride"
       onClose={ridePriceModal.onClose}
       onSubmit={handleSubmit(onSubmit)}
       body={bodyContent}
