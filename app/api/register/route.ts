@@ -1,55 +1,39 @@
-// import bcrypt from "bcrypt";
-
-// import prisma from "@/app/libs/prismadb";
-// import { NextResponse } from "next/server";
-
-// export async function POST(
-//     request: Request
-// ){
-//     const body = await request.json();
-//     const {
-//         email,
-//         name,
-//         password,
-//         card
-//     } = body;
-
-//     const hashedPassword = await bcrypt.hash(password, 12);
-//     // https://octopus-app-agn55.ondigitalocean.app/users/create
-
-//     // const user = await prisma.user.create({
-//     //     data: {
-//     //         email,
-//     //         name,
-//     //         hashedPassword
-//     //     }
-//     // });
-
-//     return NextResponse.json(user);
-// }
-// /app/api/register/route.ts
-
 import bcrypt from "bcrypt";
-import prisma from "@/app/libs/prismadb";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
     try {
-        const { email, name, password, card } = await request.json();
+        const { email, name, password, cardNumber } = await request.json();
 
+        // Hash the password
         const hashedPassword = await bcrypt.hash(password, 12);
 
-        const user = await prisma.user.create({
-            data: {
+        // Make the request to the external API
+        console.log(cardNumber);
+        const response = await fetch('https://octopus-app-agn55.ondigitalocean.app/users/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
                 email,
                 name,
-                card,
-                hashedPassword
-            }
+                cardNumber,           // Use 'cardNumber' to match the API request
+                password: hashedPassword  // Send hashed password to the API
+            }),
         });
 
+        // Check if the response is successful
+        if (!response.ok) {
+            throw new Error('Failed to create user');
+        }
+
+        const user = await response.json();
+
+        // Return the response from the API
         return NextResponse.json(user);
     } catch (error) {
+        console.log(error);
         return NextResponse.json({ error: 'User registration failed' }, { status: 500 });
     }
 }

@@ -34,7 +34,7 @@ const RegisterModal = () => {
         name: '',
         email: '',
         password: '',
-        card: ''
+        cardNumber: ''
     }
   });
 
@@ -76,7 +76,7 @@ const RegisterModal = () => {
             required
         />
         <Input 
-            id="card"
+            id="cardNumber"
             label="Card Number"
             disabled={isLoading}
             register={register}
