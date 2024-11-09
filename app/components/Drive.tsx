@@ -6,11 +6,31 @@ import useRideModal from '@/app/hooks/useRideModal'; // Import the useRideModal 
 
 const Drive = () => {
   const [isDriving, setIsDriving] = useState(false); // State to track if driving has started
+  const [location, setLocation] = useState<{ lat: number | null; lng: number | null }>({ lat: null, lng: null });
   const rideModal = useRideModal(); // Use the ride modal hook
 
 
   const handleStartDrive = () => {
     setIsDriving(true); // Switch to "driving" mode
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          });
+          console.log('Driver location:', position.coords);
+          // Here, you might send the location to your backend server or Google Maps API
+        },
+        (error) => {
+          console.error('Error getting location:', error);
+          alert('Location access denied or unavailable.');
+        }
+      );
+    } else {
+      alert('Geolocation is not supported by this browser.');
+    }
   };
 
   const handleStopDrive = () => {
