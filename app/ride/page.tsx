@@ -32,27 +32,47 @@ export default function Ride() {
     if (!originRef.current?.value || !destinationRef.current?.value) {
       return;
     }
-
+  
     const directionsService = new google.maps.DirectionsService();
     const results = await directionsService.route({
       origin: originRef.current.value,
       destination: destinationRef.current.value,
       travelMode: google.maps.TravelMode.DRIVING,
     });
-
+  
     setDirectionsResponse(results);
+  
     const distanceText = results.routes[0].legs[0].distance.text;
     const durationText = results.routes[0].legs[0].duration.text;
     setDistance(distanceText);
     setDuration(durationText);
-
-    const distanceValue = parseFloat(distanceText.replace(/[^\d.]/g, '')); // Extract numeric value
-    const ratePerMile = 1.5; // Rate per mile
-    const calculatedCost = `$${(distanceValue * ratePerMile).toFixed(2)}`;
-    setCost(calculatedCost);
-
-    ridePriceModal.onOpen(distanceText, durationText, calculatedCost); 
+  
+    // Extract distance value in kilometers or miles
+    const distanceValue = parseFloat(distanceText.replace(/[^\d.]/g, '')); // Numeric distance
+  
+    // Coordinates of pickup (origin) and dropoff (destination)
+    const pickupLat = results.routes[0].legs[0].start_location.lat();
+    const pickupLng = results.routes[0].legs[0].start_location.lng();
+    const dropoffLat = results.routes[0].legs[0].end_location.lat();
+    const dropoffLng = results.routes[0].legs[0].end_location.lng();
+  
+    // Call the backend API to get the calculated price without driver position
+    try {
+      const response = await fetch(`https://octopus-app-agn55.ondigitalocean.app/riders/calculatePrice?pickupLat=${pickupLat}&pickupLng=${pickupLng}&dropoffLat=${dropoffLat}&dropoffLng=${dropoffLng}`);
+      const data = await response.json();
+  
+      if (response.ok) {
+        const calculatedCost = `$${data.price}`;
+        setCost(calculatedCost);
+        ridePriceModal.onOpen(distanceText, durationText, calculatedCost); 
+      } else {
+        console.error('Error calculating price:', data);
+      }
+    } catch (error) {
+      console.error('Error fetching price from API:', error);
+    }
   }
+  
 
   function clearRoute() {
     setDirectionsResponse(null);
