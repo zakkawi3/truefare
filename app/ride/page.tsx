@@ -172,12 +172,12 @@ export default function Ride() {
               <FaLocationArrow className="mr-2" />
               Re-center
             </button>
-            <button
+            {/* <button
               className="bg-green-500 text-white rounded-lg py-2 px-4 hover:bg-green-600"
               onClick={handleTestModal}
             >
               Test Modal
-            </button>
+            </button> */}
             <button
               className="bg-green-500 text-white rounded-lg py-2 px-4 hover:bg-green-600"
               onClick={handleTestModalTwo}
@@ -186,11 +186,11 @@ export default function Ride() {
             </button>
           </div>
 
-          <div className="mt-4">
+          {/* <div className="mt-4">
             <p className="text-sm">Distance: {distance}</p>
             <p className="text-sm">Duration: {duration}</p>
             <p className="text-sm">Price: {cost}</p>
-          </div>
+          </div> */}
         </div>
 
         {/* Right Side */}
