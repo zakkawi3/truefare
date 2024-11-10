@@ -24,6 +24,7 @@ const SearchingModal = ({ userCoords }) => {
     }
   });
 
+  // Polling function to find the closest driver
   const pollClosestDriver = useCallback(async () => {
     if (!userCoords?.lat || !userCoords?.lng) {
       console.error("User coordinates are missing");
@@ -51,6 +52,7 @@ const SearchingModal = ({ userCoords }) => {
     }
   }, [userCoords]);
 
+  // Initialize WebSocket connection when the modal opens
   useEffect(() => {
     if (searchingModal.isOpen) {
       const newSocket = io('http://localhost:3000');
@@ -69,6 +71,7 @@ const SearchingModal = ({ userCoords }) => {
     }
   }, [searchingModal.isOpen, intervalId]);
 
+  // Set up polling when modal is open and start the interval
   useEffect(() => {
     if (searchingModal.isOpen && !intervalId) {
       const id = setInterval(pollClosestDriver, 5000); 
@@ -83,27 +86,58 @@ const SearchingModal = ({ userCoords }) => {
     };
   }, [searchingModal.isOpen, intervalId, pollClosestDriver]);
 
+  // Accept the ride
   const handleAcceptRide = () => {
-    if (socket) {
-      socket.emit('acceptRide', { driverID: driverData.driverID });
+    if (socket && driverData) {
+      const {
+        driverID,
+        riderID = "sampleRiderID", // Replace with actual rider ID if available
+        distance = driverData.distance || "Unknown distance",
+        pickupLocation = "Pickup Address", // Replace with actual pickup location
+        dropoffLocation = "Dropoff Address" // Replace with actual dropoff location
+      } = driverData;
+
+      console.log("Sending ride acceptance with details:", {
+        driverID,
+        riderID,
+        distance,
+        pickupLocation,
+        dropoffLocation,
+      });
+
+      socket.emit('acceptRide', {
+        driverID,
+        riderID,
+        distance,
+        pickupLocation,
+        dropoffLocation,
+      });
+
       toast.success("Ride accepted!");
       searchingModal.onClose();
+    } else {
+      console.error("Driver or Socket information is missing.");
     }
   };
-
+  
+  // Decline the ride
   const handleDeclineRide = () => {
     toast.error("Ride declined!");
     setDriverData(null);
   };
 
+  // Content to be displayed inside the modal
   const bodyContent = (
     <div className="flex flex-col gap-4">
       <div id="distance" className="text-lg">
-        <label className="font-medium">Searching for a driver...</label>
+        <label className="font-medium">Ride Request</label>
         {driverData ? (
           <div>
-            <p>Driver found: {driverData.driverID}, Distance: {driverData.distance}</p>
-            <div className="mt-4 flex gap-4">
+            <p>Rider ID: {driverData.riderID || "N/A"}</p>
+            <p>Distance: {driverData.distance || "N/A"}</p>
+            <p>Pickup Location: {driverData.pickupLocation || "N/A"}</p>
+            <p>Dropoff Location: {driverData.dropoffLocation || "N/A"}</p>
+            <div className="mt-4 flex gap-4 justify-center">
               <button
                 className="bg-blue-500 text-white rounded-lg py-2 px-4 hover:bg-blue-600"
                 onClick={handleAcceptRide}
