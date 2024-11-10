@@ -27,11 +27,11 @@ const SearchingModal = ({ userCoords }) => {
   // Polling function to find the closest driver
   const pollClosestDriver = useCallback(async () => {
     if (!userCoords?.lat || !userCoords?.lng) {
-      console.error("User coordinates are missing");
+      console.error("User coordinates are missing at pollClosestDriver.");
       return;
     }
 
-    console.log('Polling http://localhost:3000/api/closestDriver...');
+    console.log('Polling http://localhost:3000/api/closestDriver with coordinates:', userCoords);
     setIsLoading(true);
     try {
       const response = await axios.get('http://localhost:3000/api/closestDriver', { 
@@ -55,6 +55,7 @@ const SearchingModal = ({ userCoords }) => {
   // Initialize WebSocket connection when the modal opens
   useEffect(() => {
     if (searchingModal.isOpen) {
+      console.log("Opening WebSocket connection...");
       const newSocket = io('http://localhost:3000');
       setSocket(newSocket);
 
@@ -65,6 +66,7 @@ const SearchingModal = ({ userCoords }) => {
       });
 
       return () => {
+        console.log("Closing WebSocket connection...");
         newSocket.disconnect();
         setSocket(null);
       };
@@ -74,29 +76,31 @@ const SearchingModal = ({ userCoords }) => {
   // Set up polling when modal is open and start the interval
   useEffect(() => {
     if (searchingModal.isOpen && !intervalId) {
+      console.log("Starting polling interval...");
       const id = setInterval(pollClosestDriver, 5000); 
       setIntervalId(id);
     }
 
     return () => {
       if (intervalId) {
+        console.log("Clearing polling interval...");
         clearInterval(intervalId);
         setIntervalId(null);
       }
     };
   }, [searchingModal.isOpen, intervalId, pollClosestDriver]);
 
-  // Accept the ride
+
   const handleAcceptRide = () => {
     if (socket && driverData) {
       const {
         driverID,
-        riderID = "sampleRiderID", // Replace with actual rider ID if available
+        riderID = "sampleRiderID", // Replace with actual rider ID
         distance = driverData.distance || "Unknown distance",
         pickupLocation = "Pickup Address", // Replace with actual pickup location
         dropoffLocation = "Dropoff Address" // Replace with actual dropoff location
       } = driverData;
-
+  
       console.log("Sending ride acceptance with details:", {
         driverID,
         riderID,
@@ -104,7 +108,7 @@ const SearchingModal = ({ userCoords }) => {
         pickupLocation,
         dropoffLocation,
       });
-
+  
       socket.emit('acceptRide', {
         driverID,
         riderID,
@@ -112,7 +116,7 @@ const SearchingModal = ({ userCoords }) => {
         pickupLocation,
         dropoffLocation,
       });
-
+  
       toast.success("Ride accepted!");
       searchingModal.onClose();
     } else {
@@ -120,24 +124,20 @@ const SearchingModal = ({ userCoords }) => {
     }
   };
   
-  // Decline the ride
+
   const handleDeclineRide = () => {
     toast.error("Ride declined!");
     setDriverData(null);
   };
 
-  // Content to be displayed inside the modal
   const bodyContent = (
     <div className="flex flex-col gap-4">
       <div id="distance" className="text-lg">
-        <label className="font-medium">Ride Request</label>
+        <label className="font-medium">Searching for a driver...</label>
         {driverData ? (
           <div>
-            <p>Rider ID: {driverData.riderID || "N/A"}</p>
-            <p>Distance: {driverData.distance || "N/A"}</p>
-            <p>Pickup Location: {driverData.pickupLocation || "N/A"}</p>
-            <p>Dropoff Location: {driverData.dropoffLocation || "N/A"}</p>
-            <div className="mt-4 flex gap-4 justify-center">
+            <p>Driver found: {driverData.driverID}, Distance: {driverData.distance}</p>
+            <div className="mt-4 flex gap-4">
               <button
                 className="bg-blue-500 text-white rounded-lg py-2 px-4 hover:bg-blue-600"
                 onClick={handleAcceptRide}

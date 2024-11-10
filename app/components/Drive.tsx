@@ -19,7 +19,7 @@ const Drive = () => {
       setSocket(newSocket);
 
       newSocket.emit('startDrive', { driverID });
-
+      
       newSocket.on('rideAcceptedNotification', (data) => {
         console.log('Ride accepted by rider, received data:', data); // Debug statement
         setRiderData({
@@ -130,29 +130,22 @@ const Drive = () => {
           </div>
         )}
         
-        {showRideRequest && riderData && (
-          <div className="mt-10 text-center">
-            <h2 className="text-xl font-semibold">Ride Request</h2>
-            <p className="mt-2">Rider ID: {riderData.riderID || 'N/A'}</p>
-            <p>Distance: {riderData.distance ? `${riderData.distance} km` : 'N/A'}</p>
-            <p>Pickup Location: {riderData.pickupLocation || 'N/A'}</p>
-            <p>Dropoff Location: {riderData.dropoffLocation || 'N/A'}</p>
-            <div className="mt-4 flex justify-center gap-4">
-              <button
-                className="bg-blue-500 text-white rounded-lg py-2 px-4 hover:bg-blue-600"
-                onClick={handleAcceptRide}
-              >
-                Accept
-              </button>
-              <button
-                className="bg-red-500 text-white rounded-lg py-2 px-4 hover:bg-red-600"
-                onClick={handleRejectRide}
-              >
-                Reject
-              </button>
-            </div>
-          </div>
-        )}
+            {showRideRequest && riderData && (
+      <div className="mt-10 text-center">
+        <h2 className="text-xl font-semibold">Ride Request</h2>
+        <p className="mt-2">Rider ID: {riderData.riderID || 'N/A'}</p>
+        <p>Distance: {riderData.distance ? `${riderData.distance} km` : 'N/A'}</p>
+        <p>Pickup Location: {riderData.pickupLocation || 'N/A'}</p>
+        <p>Dropoff Location: {riderData.dropoffLocation || 'N/A'}</p>
+        
+        {/* Print the entire riderData object as a JSON string */}
+        <pre className="mt-4 text-sm bg-gray-100 p-2 rounded">
+          {JSON.stringify(riderData, null, 2)}
+        </pre>
+      </div>
+    )}
+
+        
       </div>
     </Container>
   );
