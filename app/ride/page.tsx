@@ -21,6 +21,8 @@ export default function Ride() {
   const ridePriceModal = useRidePriceModal(); // Use the ride modal hook
   const driverAssignmentModal = useDriverAssignmentModal();
   const [originCoords, setOriginCoords] = useState<{ lat: number, lng: number } | null>(null);
+  const [pickupLocation, setPickupLocation] = useState(''); // New state for pickup location
+  const [dropoffLocation, setDropoffLocation] = useState(''); // New state for dropoff location
 
   const originRef = useRef<HTMLInputElement>(null);
   const destinationRef = useRef<HTMLInputElement>(null);
@@ -85,6 +87,10 @@ export default function Ride() {
       const lng = originPlace.geometry.location.lng();
       setOriginCoords({ lat, lng });
     }
+
+    // Store pickup and dropoff locations
+    setPickupLocation(originRef.current.value);
+    setDropoffLocation(destinationRef.current.value);
   }
 
   function clearRoute() {
@@ -115,14 +121,6 @@ export default function Ride() {
       destinationRef.current!.value = place.formatted_address!;
     }
   }
-
-  const handleTestModal = () => {
-    ridePriceModal.onOpen(); 
-  };
-
-  const handleTestModalTwo = () => {
-    driverAssignmentModal.onOpen(); 
-  };
 
   return (
     <Container>
@@ -185,18 +183,6 @@ export default function Ride() {
               <FaLocationArrow className="mr-2" />
               Re-center
             </button>
-            <button
-              className="bg-green-500 text-white rounded-lg py-2 px-4 hover:bg-green-600"
-              onClick={handleTestModal}
-            >
-              Test Modal
-            </button>
-            <button
-              className="bg-green-500 text-white rounded-lg py-2 px-4 hover:bg-green-600"
-              onClick={handleTestModalTwo}
-            >
-              Test Modal 2
-            </button>
           </div>
 
           <div className="mt-4">
@@ -235,7 +221,7 @@ export default function Ride() {
       </div>
       {/* Render SearchingModal only when originCoords is set */}
       {originCoords && (
-        <SearchingModal userCoords={originCoords} />
+        <SearchingModal userCoords={originCoords} pickupLocation={pickupLocation} dropoffLocation={dropoffLocation} />
       )}
     </Container>
   );

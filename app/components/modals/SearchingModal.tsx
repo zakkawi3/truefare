@@ -8,7 +8,7 @@ import useSearchingModal from '@/app/hooks/useSearchingModal';
 import Modal from './Modal';
 import toast from 'react-hot-toast';
 
-const SearchingModal = ({ userCoords }) => {
+const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
   const searchingModal = useSearchingModal();
   const [isLoading, setIsLoading] = useState(false);
   const [socket, setSocket] = useState(null);
@@ -24,7 +24,6 @@ const SearchingModal = ({ userCoords }) => {
     }
   });
 
-  // Polling function to find the closest driver
   const pollClosestDriver = useCallback(async () => {
     if (!userCoords?.lat || !userCoords?.lng) {
       console.error("User coordinates are missing at pollClosestDriver.");
@@ -52,7 +51,6 @@ const SearchingModal = ({ userCoords }) => {
     }
   }, [userCoords]);
 
-  // Initialize WebSocket connection when the modal opens
   useEffect(() => {
     if (searchingModal.isOpen) {
       console.log("Opening WebSocket connection...");
@@ -73,7 +71,6 @@ const SearchingModal = ({ userCoords }) => {
     }
   }, [searchingModal.isOpen, intervalId]);
 
-  // Set up polling when modal is open and start the interval
   useEffect(() => {
     if (searchingModal.isOpen && !intervalId) {
       console.log("Starting polling interval...");
@@ -90,17 +87,14 @@ const SearchingModal = ({ userCoords }) => {
     };
   }, [searchingModal.isOpen, intervalId, pollClosestDriver]);
 
-
   const handleAcceptRide = () => {
     if (socket && driverData) {
       const {
         driverID,
-        riderID = "sampleRiderID", // Replace with actual rider ID
-        distance = driverData.distance || "Unknown distance",
-        pickupLocation = "Pickup Address", // Replace with actual pickup location
-        dropoffLocation = "Dropoff Address" // Replace with actual dropoff location
+        riderID = "sampleRiderID", 
+        distance = driverData.distance || "Unknown distance"
       } = driverData;
-  
+
       console.log("Sending ride acceptance with details:", {
         driverID,
         riderID,
@@ -108,7 +102,7 @@ const SearchingModal = ({ userCoords }) => {
         pickupLocation,
         dropoffLocation,
       });
-  
+
       socket.emit('acceptRide', {
         driverID,
         riderID,
@@ -116,14 +110,13 @@ const SearchingModal = ({ userCoords }) => {
         pickupLocation,
         dropoffLocation,
       });
-  
+
       toast.success("Ride accepted!");
       searchingModal.onClose();
     } else {
       console.error("Driver or Socket information is missing.");
     }
   };
-  
 
   const handleDeclineRide = () => {
     toast.error("Ride declined!");

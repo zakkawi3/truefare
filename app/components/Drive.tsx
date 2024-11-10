@@ -21,7 +21,7 @@ const Drive = () => {
       newSocket.emit('startDrive', { driverID });
       
       newSocket.on('rideAcceptedNotification', (data) => {
-        console.log('Ride accepted by rider, received data:', data); // Debug statement
+        console.log('Ride accepted by rider, received data:', data);
         setRiderData({
           riderID: data.riderID || 'N/A',
           distance: data.distance || 'N/A',
@@ -30,7 +30,6 @@ const Drive = () => {
         });
         setShowRideRequest(true);
       });
-      
 
       return () => {
         newSocket.disconnect();
@@ -131,22 +130,15 @@ const Drive = () => {
           </div>
         )}
         
-            {showRideRequest && riderData && (
-      <div className="mt-10 text-center">
-        <h2 className="text-xl font-semibold">Ride Request</h2>
-        <p className="mt-2">Rider ID: {riderData.riderID || 'N/A'}</p>
-        <p>Distance: {riderData.distance ? `${riderData.distance} km` : 'N/A'}</p>
-        <p>Pickup Location: {riderData.pickupLocation || 'N/A'}</p>
-        <p>Dropoff Location: {riderData.dropoffLocation || 'N/A'}</p>
-        
-        {/* Print the entire riderData object as a JSON string */}
-        <pre className="mt-4 text-sm bg-gray-100 p-2 rounded">
-          {JSON.stringify(riderData, null, 2)}
-        </pre>
-      </div>
-    )}
-
-        
+        {showRideRequest && riderData && (
+          <div className="mt-10 text-center">
+            <h2 className="text-xl font-semibold">Ride Request</h2>
+            <p className="mt-2">Rider ID: {riderData.riderID}</p>
+            <p>Distance: {riderData.distance}</p>
+            <p>Pickup Location: {riderData.pickupLocation}</p>
+            <p>Dropoff Location: {riderData.dropoffLocation}</p>
+          </div>
+        )}
       </div>
     </Container>
   );
