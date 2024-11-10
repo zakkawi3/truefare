@@ -33,7 +33,7 @@ export default function Ride() {
   });
 
   useEffect(() => {
-    const socket = io('http://localhost:3001'); // Update with your backend URL if different
+    const socket = io('http://localhost:3000'); // Update with your backend URL if different
     socket.on('connect', () => {
       console.log('Connected to WebSocket server');
     });
