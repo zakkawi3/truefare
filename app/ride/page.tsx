@@ -35,7 +35,7 @@ export default function Ride() {
   });
 
   useEffect(() => {
-    const socket = io('http://localhost:3000'); // Update with your backend URL if different
+    const socket = io('https://octopus-app-agn55.ondigitalocean.app'); // Update with your backend URL if different
     socket.on('connect', () => {
       console.log('Connected to WebSocket server');
     });
@@ -58,41 +58,59 @@ export default function Ride() {
     if (!originRef.current?.value || !destinationRef.current?.value) {
       return;
     }
-
+  
     const directionsService = new google.maps.DirectionsService();
     const results = await directionsService.route({
       origin: originRef.current.value,
       destination: destinationRef.current.value,
       travelMode: google.maps.TravelMode.DRIVING,
     });
-
+  
     setDirectionsResponse(results);
+  
     const distanceText = results.routes[0].legs[0].distance.text;
     const durationText = results.routes[0].legs[0].duration.text;
     setDistance(distanceText);
     setDuration(durationText);
-
-    // Calculate price based on distance
+  
+    // Extract distance value in kilometers or miles
     const distanceValue = parseFloat(distanceText.replace(/[^\d.]/g, ''));
-    const ratePerMile = 1.5;
-    const calculatedCost = `$${(distanceValue * ratePerMile).toFixed(2)}`;
-    setCost(calculatedCost);
-
-    ridePriceModal.onOpen(distanceText, durationText, calculatedCost); 
-
-    // Extract origin coordinates and set them
-    const originPlace = originAutoCompleteRef.current?.getPlace();
-    if (originPlace && originPlace.geometry) {
-      const lat = originPlace.geometry.location.lat();
-      const lng = originPlace.geometry.location.lng();
-      setOriginCoords({ lat, lng });
+  
+    // Coordinates of pickup (origin) and dropoff (destination)
+    const pickupLat = results.routes[0].legs[0].start_location.lat();
+    const pickupLng = results.routes[0].legs[0].start_location.lng();
+    const dropoffLat = results.routes[0].legs[0].end_location.lat();
+    const dropoffLng = results.routes[0].legs[0].end_location.lng();
+  
+    // Call the backend API to get the calculated price
+    try {
+      const response = await fetch(`https://octopus-app-agn55.ondigitalocean.app/riders/calculatePrice?pickupLat=${pickupLat}&pickupLng=${pickupLng}&dropoffLat=${dropoffLat}&dropoffLng=${dropoffLng}`);
+      const data = await response.json();
+  
+      if (response.ok) {
+        const calculatedCost = `$${data.price}`;
+        setCost(calculatedCost);
+        ridePriceModal.onOpen(distanceText, durationText, calculatedCost); 
+  
+        // Extract origin coordinates and set them
+        const originPlace = originAutoCompleteRef.current?.getPlace();
+        if (originPlace && originPlace.geometry) {
+          const lat = originPlace.geometry.location.lat();
+          const lng = originPlace.geometry.location.lng();
+          setOriginCoords({ lat, lng });
+        }
+  
+        // Store pickup and dropoff locations
+        setPickupLocation(originRef.current.value);
+        setDropoffLocation(destinationRef.current.value);
+      } else {
+        console.error('Error calculating price:', data);
+      }
+    } catch (error) {
+      console.error('Error fetching price from API:', error);
     }
-
-    // Store pickup and dropoff locations
-    setPickupLocation(originRef.current.value);
-    setDropoffLocation(destinationRef.current.value);
   }
-
+  
   function clearRoute() {
     setDirectionsResponse(null);
     setDistance('');

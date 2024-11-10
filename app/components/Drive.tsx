@@ -11,11 +11,11 @@ const Drive = () => {
   const [socket, setSocket] = useState(null);
   const [showRideRequest, setShowRideRequest] = useState(false);
   const [riderData, setRiderData] = useState<{ riderID?: string; distance?: string; pickupLocation?: string; dropoffLocation?: string }>({});
-  const driverID = 12345;
+  const driverID = 29; //getDriverID
 
   useEffect(() => {
     if (isDriving) {
-      const newSocket = io('http://localhost:3000');
+      const newSocket = io('https://octopus-app-agn55.ondigitalocean.app/');
       setSocket(newSocket);
 
       newSocket.emit('startDrive', { driverID });
@@ -38,40 +38,56 @@ const Drive = () => {
     }
   }, [isDriving]);
 
-  const handleStartDrive = () => {
-    setIsDriving(true);
-    console.log('Driver started looking for a ride...');
+const handleStartDrive = () => {
+  setIsDriving(true);
+  console.log('Driver started looking for a ride...');
 
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const latitude = position.coords.latitude;
-          const longitude = position.coords.longitude;
+  const driverEmail = 'lilbaby@gmail.com'; // Replace this with the actual driver email
 
-          setLocation({ lat: latitude, lng: longitude });
-          console.log('Driver location:', { latitude, longitude });
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
 
-          try {
-            await axios.post('http://localhost:3000/api/createDriver', {
-              driverID,
+        setLocation({ lat: latitude, lng: longitude });
+        console.log('Driver location:', { latitude, longitude });
+
+        try {
+          // Step 1: Get the driver ID by email
+          const idResponse = await axios.get(
+            `https://octopus-app-agn55.ondigitalocean.app/users/${driverEmail}/id`
+          );
+
+          //const driverID = idResponse.data.userID; // Extract the userID from the response
+
+          // Step 2: Activate the driver using the fetched driverID
+          const activateResponse = await axios.put(
+            `https://octopus-app-agn55.ondigitalocean.app/users/${driverID}/activate`,
+            {
               latitude,
               longitude,
-            });
-            console.log('Driver registered successfully on the server');
-          } catch (error) {
-            console.error('Error creating driver:', error);
-            alert('Failed to register driver on the server.');
-          }
-        },
-        (error) => {
-          console.error('Error getting location:', error);
-          alert('Location access denied or unavailable.');
+            },
+            { headers: { 'Content-Type': 'application/json' } }
+          );
+
+          console.log('User activated successfully:', activateResponse.data);
+        } catch (error) {
+          console.error('Error activating driver:', error);
+          alert('Failed to activate driver on the server.');
         }
-      );
-    } else {
-      alert('Geolocation is not supported by this browser.');
-    }
-  };
+      },
+      (error) => {
+        console.error('Error getting location:', error);
+        alert('Location access denied or unavailable.');
+      }
+    );
+  } else {
+    alert('Geolocation is not supported by this browser.');
+  }
+};
+
+  
 
   const handleStopDrive = () => {
     setIsDriving(false);

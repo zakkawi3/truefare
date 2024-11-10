@@ -29,18 +29,18 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
       console.error("User coordinates are missing at pollClosestDriver.");
       return;
     }
-
-    console.log('Polling http://localhost:3000/api/closestDriver with coordinates:', userCoords);
+  
+    console.log('Polling https://octopus-app-agn55.ondigitalocean.app/riders/closestDriver', userCoords);
     setIsLoading(true);
     try {
-      const response = await axios.get('http://localhost:3000/api/closestDriver', { 
+      const response = await axios.get('https://octopus-app-agn55.ondigitalocean.app/riders/closestDriver', { 
         params: {
           userLat: userCoords.lat,
           userLng: userCoords.lng,
         },
       });
-
-      console.log('Received response from /api/closestDriver:', response.data);
+  
+      console.log('Received response from /riders/closestDriver:', response.data);
       setDriverData(response.data); 
       toast.success('Searching for closest driver...', { id: 'searching-toast' });
     } catch (error) {
@@ -50,11 +50,12 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
       setIsLoading(false);
     }
   }, [userCoords]);
+  
 
   useEffect(() => {
     if (searchingModal.isOpen) {
       console.log("Opening WebSocket connection...");
-      const newSocket = io('http://localhost:3000');
+      const newSocket = io('https://octopus-app-agn55.ondigitalocean.app');
       setSocket(newSocket);
 
       newSocket.on('rideAssigned', (data) => {
