@@ -1,17 +1,12 @@
-import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import NextAuth, { AuthOptions } from "next-auth"
 import GithubProvider from "next-auth/providers/github"
 import GoogleProvider from "next-auth/providers/google"
 import CredentialsProvider from "next-auth/providers/credentials"
-import bcrypt from "bcrypt"
-
-import prisma from "@/app/libs/prismadb"
 
 export const authOptions: AuthOptions = {
-    adapter: PrismaAdapter(prisma),
     providers: [
         GithubProvider({
-            clientId: process.env.GITHUB_id as string,
+            clientId: process.env.GITHUB_ID as string,
             clientSecret: process.env.GITHUB_SECRET as string,
         }),
         GoogleProvider({
@@ -21,45 +16,49 @@ export const authOptions: AuthOptions = {
         CredentialsProvider({
             name: 'credentials',
             credentials: {
-                email: {label: 'email', type: 'text'},
-                password: {label: 'password', type: 'password'},
+                email: { label: 'email', type: 'text' },
+                password: { label: 'password', type: 'password' },
             },
-            async authorize(credentials){
-                if(!credentials?.email || !credentials?.password){
+            async authorize(credentials) {
+                if (!credentials?.email || !credentials?.password) {
                     throw new Error('Invalid Credentials');
                 }
 
-                const user = await prisma.user.findUnique({
-                    where: {
-                        email: credentials.email
-                    }
+                // Call external API to verify user credentials
+                const response = await fetch('https://octopus-app-agn55.ondigitalocean.app/users/verify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: credentials.email,
+                        password: credentials.password,
+                    }),
                 });
 
-                if(!user || !user?.hashedPassword){
-                    throw new Error('Invaldi Credentials');
-                }
-
-                const isCorrectPassword = await bcrypt.compare(
-                    credentials.password,
-                    user.hashedPassword
-                );
-
-                if(!isCorrectPassword){
+                if (!response.ok) {
                     throw new Error('Invalid credentials');
                 }
 
-                return user;
+                const data = await response.json();
+
+                // Check for user verification
+                if (data.message === 'User verified' && data.user) {
+                    return data.user; // Return the user object if verified
+                } else {
+                    throw new Error('Invalid credentials');
+                }
             }
         }),
     ],
     pages: {
         signIn: '/',
     },
-    debug: process.env.NODE_ENV == 'development',
+    debug: process.env.NODE_ENV === 'development',
     session: {
-        strategy: "jwt"
+        strategy: "jwt",
     },
     secret: process.env.NEXTAUTH_SECRET,
 };
 
-export default NextAuth(authOptions)
+export default NextAuth(authOptions);
