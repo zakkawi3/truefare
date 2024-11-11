@@ -38,60 +38,66 @@ const Drive = () => {
     }
   }, [isDriving]);
 
-const handleStartDrive = () => {
-  setIsDriving(true);
-  console.log('Driver started looking for a ride...');
-
-  const driverEmail = localStorage.getItem('userEmail'); // Retrieve email from local storage
-  if (!driverEmail) {
-    console.error("User email not found in local storage");
-    alert("Please log in again.");
-    return;
-  }
+  const handleStartDrive = () => {
+    setIsDriving(true);
+    console.log('Driver started looking for a ride...');
+    const driverEmail = localStorage.getItem('userEmail'); // Retrieve email from local storage
+    if (!driverEmail) {
+      console.error("User email not found in local storage");
+      alert("Please log in again.");
+      return;
+    }  
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const userLat = position.coords.latitude;
+          const userLng = position.coords.longitude;
   
-
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const latitude = position.coords.latitude;
-        const longitude = position.coords.longitude;
-
-        setLocation({ lat: latitude, lng: longitude });
-        console.log('Driver location:', { latitude, longitude });
-
-        try {
-          // Step 1: Get the driver ID by email
-          const idResponse = await axios.get(
-            `https://octopus-app-agn55.ondigitalocean.app/users/${driverEmail}/id`
-          );
-
-          const driverID = idResponse.data.userID; // Extract the userID from the response
-          console.log('Driver ID:', driverID);
-          // Step 2: Activate the driver using the fetched driverID
-          const activateResponse = await axios.put(
-            `https://octopus-app-agn55.ondigitalocean.app/users/${driverID}/activate`,
-            {
-              latitude,
-              longitude,
-            },
-            { headers: { 'Content-Type': 'application/json' } }
-          );
-
-          console.log('User activated successfully:', activateResponse.data);
-        } catch (error) {
-          console.error('Error activating driver:', error);
-          alert('Failed to activate driver on the server.');
+          setLocation({ lat: userLat, lng: userLng });
+          console.log('Driver location:', { userLat, userLng });
+  
+          try {
+            // Step 1: Get the driver ID by email
+            const idResponse = await axios.get(
+              `https://octopus-app-agn55.ondigitalocean.app/users/${driverEmail}/id`
+            );
+            const driverID = idResponse.data.userID; // Extract the userID from the response
+  
+            // Step 2: Activate the driver using the fetched driverID
+            const activateResponse = await axios.put(
+              `https://octopus-app-agn55.ondigitalocean.app/users/${driverID}/activate`,
+              { headers: { 'Content-Type': 'application/json' } }
+            );
+  
+            console.log('User activated successfully:', activateResponse.data);
+  
+            // Step 3: Update the driver's location using the fetched driverID
+            const updateResponse = await axios.put(
+              `https://octopus-app-agn55.ondigitalocean.app/drivers/${driverID}/location`,
+              {
+                userLat,
+                userLng,
+              },
+              { headers: { 'Content-Type': 'application/json' } }
+            );
+  
+            console.log('Driver location updated successfully:', updateResponse.data);
+          } catch (error) {
+            console.error('Error activating or updating driver location:', error);
+            alert('Failed to activate or update driver location on the server.');
+          }
+        },
+        (error) => {
+          console.error('Error getting location:', error);
+          alert('Location access denied or unavailable.');
         }
-      },
-      (error) => {
-        console.error('Error getting location:', error);
-        alert('Location access denied or unavailable.');
-      }
-    );
-  } else {
-    alert('Geolocation is not supported by this browser.');
-  }
-};
+      );
+    } else {
+      alert('Geolocation is not supported by this browser.');
+    }
+  };
+  
+  
 
   
 
