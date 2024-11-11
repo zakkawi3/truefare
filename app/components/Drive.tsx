@@ -127,9 +127,15 @@ const Drive = () => {
 
   
 
-  const handleStopDrive = () => {
+  const handleStopDrive = async () => {
     setIsDriving(false);
     console.log('Driver stopped looking for a ride');
+    const activateResponse = await axios.put(
+      `https://octopus-app-agn55.ondigitalocean.app/users/${driverID}/deactivate`,
+      { headers: { 'Content-Type': 'application/json' } }
+    );
+
+    console.log('User activated successfully:', activateResponse.data);
     if (socket) {
       socket.disconnect();
       setSocket(null);
