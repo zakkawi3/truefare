@@ -11,33 +11,58 @@ const Drive = () => {
   const [socket, setSocket] = useState(null);
   const [showRideRequest, setShowRideRequest] = useState(false);
   const [riderData, setRiderData] = useState<{ riderID?: string; distance?: string; pickupLocation?: string; dropoffLocation?: string }>({});
-  const userID = 29; //getDriverID
-  const driverID = 29; //getDriverID
+  // const userID = 29; //getDriverID
+  // const driverID = 29; //getDriverID
 
   useEffect(() => {
-    if (isDriving) {
-      const newSocket = io('https://octopus-app-agn55.ondigitalocean.app/');
-      setSocket(newSocket);
-
-      newSocket.emit('startDrive', { driverID });
-      
-      newSocket.on('rideAcceptedNotification', (data) => {
-        console.log('Ride accepted by rider, received data:', data);
-        setRiderData({
-          riderID: data.riderID || 'N/A',
-          distance: data.distance || 'N/A',
-          pickupLocation: data.pickupLocation || 'N/A',
-          dropoffLocation: data.dropoffLocation || 'N/A',
-        });
-        setShowRideRequest(true);
-      });
-
-      return () => {
-        newSocket.disconnect();
+    const setupSocket = async () => {
+      if (isDriving) {
+        const newSocket = io('https://octopus-app-agn55.ondigitalocean.app/');
+        setSocket(newSocket);
+        
+        const driverEmail = localStorage.getItem('userEmail'); // Retrieve email from local storage
+        if (!driverEmail) {
+          console.error("User email not found in local storage");
+          alert("Please log in again.");
+          return;
+        }
+        
+        try {
+          const idResponse = await axios.get(
+            `https://octopus-app-agn55.ondigitalocean.app/users/${driverEmail}/id`
+          );
+          const driverID = idResponse.data.userID; // Extract the userID from the response
+  
+          newSocket.emit('startDrive', { driverID });
+  
+          newSocket.on('rideAcceptedNotification', (data) => {
+            console.log('Ride accepted by rider, received data:', data);
+            setRiderData({
+              riderID: data.riderID || 'N/A',
+              distance: data.distance || 'N/A',
+              pickupLocation: data.pickupLocation || 'N/A',
+              dropoffLocation: data.dropoffLocation || 'N/A',
+            });
+            setShowRideRequest(true);
+          });
+        } catch (error) {
+          console.error('Error fetching driver ID:', error);
+          alert('Failed to start drive due to an error fetching the driver ID.');
+        }
+      }
+    };
+  
+    setupSocket();
+  
+    // Cleanup function to disconnect socket when component unmounts or `isDriving` changes
+    return () => {
+      if (socket) {
+        socket.disconnect();
         setSocket(null);
-      };
-    }
+      }
+    };
   }, [isDriving]);
+  
 
   const handleStartDrive = () => {
     setIsDriving(true);
