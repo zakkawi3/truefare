@@ -6,10 +6,12 @@ import useRidePriceModal from '@/app/hooks/useRidePriceModal';
 import useSearchingModal from '@/app/hooks/useSearchingModal'; // Import SearchingModal hook
 import Modal from './Modal';
 import toast from 'react-hot-toast';
+import usePaymentModal from '@/app/hooks/usePaymentModal';
 
 const RidePriceModal = () => {
   const ridePriceModal = useRidePriceModal();
   const searchingModal = useSearchingModal(); // Initialize SearchingModal
+  const paymentModal = usePaymentModal();
   const [isLoading, setIsLoading] = useState(false);
   const { isOpen, distance, duration, cost } = ridePriceModal;
 
@@ -29,7 +31,8 @@ const RidePriceModal = () => {
 
     // Close RidePriceModal and open SearchingModal
     ridePriceModal.onClose();
-    searchingModal.onOpen();
+    paymentModal.onOpen();
+    //searchingModal.onOpen();
     
     setIsLoading(false);
   };
