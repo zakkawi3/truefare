@@ -160,6 +160,7 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
       title="Finding Your Driver"
       actionLabel="Cancel Ride"
       onClose={() => searchingModal.onClose()}
+      onSubmit={() => searchingModal.onClose()}
       body={bodyContent}
       actionClassName="bg-blue-500 text-white hover:bg-blue-600 border-blue-500"
     />
