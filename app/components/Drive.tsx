@@ -12,13 +12,14 @@ const Drive = () => {
   const [showRideRequest, setShowRideRequest] = useState(false);
   const [riderData, setRiderData] = useState<{ riderID?: string; distance?: string; pickupLocation?: string; dropoffLocation?: string }>({});
   const userID = 29; //getDriverID
+  const driverID = 29; //getDriverID
 
   useEffect(() => {
     if (isDriving) {
       const newSocket = io('https://octopus-app-agn55.ondigitalocean.app/');
       setSocket(newSocket);
 
-      newSocket.emit('startDrive', { userID: userID });
+      newSocket.emit('startDrive', { driverID });
       
       newSocket.on('rideAcceptedNotification', (data) => {
         console.log('Ride accepted by rider, received data:', data);
