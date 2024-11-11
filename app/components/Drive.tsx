@@ -11,14 +11,14 @@ const Drive = () => {
   const [socket, setSocket] = useState(null);
   const [showRideRequest, setShowRideRequest] = useState(false);
   const [riderData, setRiderData] = useState<{ riderID?: string; distance?: string; pickupLocation?: string; dropoffLocation?: string }>({});
-  const driverID = 29; //getDriverID
+  const userID = 29; //getDriverID
 
   useEffect(() => {
     if (isDriving) {
       const newSocket = io('https://octopus-app-agn55.ondigitalocean.app/');
       setSocket(newSocket);
 
-      newSocket.emit('startDrive', { driverID });
+      newSocket.emit('startDrive', { userID: userID });
       
       newSocket.on('rideAcceptedNotification', (data) => {
         console.log('Ride accepted by rider, received data:', data);
@@ -42,7 +42,13 @@ const handleStartDrive = () => {
   setIsDriving(true);
   console.log('Driver started looking for a ride...');
 
-  const driverEmail = 'lilbaby@gmail.com'; // Replace this with the actual driver email
+  const driverEmail = localStorage.getItem('userEmail'); // Retrieve email from local storage
+  if (!driverEmail) {
+    console.error("User email not found in local storage");
+    alert("Please log in again.");
+    return;
+  }
+  
 
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
@@ -59,8 +65,8 @@ const handleStartDrive = () => {
             `https://octopus-app-agn55.ondigitalocean.app/users/${driverEmail}/id`
           );
 
-          //const driverID = idResponse.data.userID; // Extract the userID from the response
-
+          const driverID = idResponse.data.userID; // Extract the userID from the response
+          console.log('Driver ID:', driverID);
           // Step 2: Activate the driver using the fetched driverID
           const activateResponse = await axios.put(
             `https://octopus-app-agn55.ondigitalocean.app/users/${driverID}/activate`,
