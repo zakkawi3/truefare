@@ -45,7 +45,7 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
       toast.success('Searching for closest driver...', { id: 'searching-toast' });
     } catch (error) {
       console.error('Error finding driver:', error);
-      toast.error('Something went wrong', { id: 'error-toast' });
+      toast.loading('Looking for driver...', { id: 'error-toast' });
     } finally {
       setIsLoading(false);
     }
@@ -146,7 +146,7 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
             </div>
           </div>
         ) : (
-          <p>Searching...</p>
+          <p></p>
         )}
       </div>
     </div>
@@ -160,7 +160,7 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
       actionLabel="Cancel Ride"
       onClose={() => searchingModal.onClose()}
       body={bodyContent}
-      actionClassName="bg-blue-500 text-white hover:bg-blue-600 border-blue-500"
+      actionClassName="bg-red-500 text-white hover:bg-red-600 border-red-500"
     />
   );
 };
