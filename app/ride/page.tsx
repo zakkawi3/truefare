@@ -18,11 +18,13 @@ export default function Ride() {
   const [distance, setDistance] = useState('');
   const [duration, setDuration] = useState('');
   const [cost, setCost] = useState('');
-  const ridePriceModal = useRidePriceModal(); // Use the ride modal hook
+  const [rideAccepted, setRideAccepted] = useState(false); // New state to track ride acceptance
+  const ridePriceModal = useRidePriceModal();
   const driverAssignmentModal = useDriverAssignmentModal();
   const [originCoords, setOriginCoords] = useState<{ lat: number, lng: number } | null>(null);
-  const [pickupLocation, setPickupLocation] = useState(''); // New state for pickup location
-  const [dropoffLocation, setDropoffLocation] = useState(''); // New state for dropoff location
+  const [pickupLocation, setPickupLocation] = useState('');
+  const [dropoffLocation, setDropoffLocation] = useState('');
+  const [assignedDriverData, setAssignedDriverData] = useState(null); // Store driver data upon assignment
 
   const originRef = useRef<HTMLInputElement>(null);
   const destinationRef = useRef<HTMLInputElement>(null);
@@ -36,13 +38,29 @@ export default function Ride() {
 
   useEffect(() => {
     const socket = io('http://localhost:3000'); // Update with your backend URL if different
+
     socket.on('connect', () => {
       console.log('Connected to WebSocket server');
     });
 
     socket.on('rideAssigned', (data) => {
       console.log('Ride assigned:', data);
-      driverAssignmentModal.onOpen(); // Open the modal when a ride is assigned
+      setAssignedDriverData(data); // Save assigned driver data
+      driverAssignmentModal.onOpen();
+    });
+
+    socket.on('rideAcceptedByDriver', (data) => {
+      console.log('Ride accepted by driver:', data);
+      setRideAccepted(true);
+      // Optionally update the UI to show ETA, etc.
+      driverAssignmentModal.onClose();
+    });
+
+    socket.on('rideRejectedByDriver', () => {
+      console.log('Ride rejected by driver');
+      setAssignedDriverData(null);
+      driverAssignmentModal.onClose();
+      // Re-open modal to search for a new driver or inform the user
     });
 
     socket.on('disconnect', () => {
@@ -78,7 +96,7 @@ export default function Ride() {
     const calculatedCost = `$${(distanceValue * ratePerMile).toFixed(2)}`;
     setCost(calculatedCost);
 
-    ridePriceModal.onOpen(distanceText, durationText, calculatedCost); 
+    ridePriceModal.onOpen(distanceText, durationText, calculatedCost);
 
     // Extract origin coordinates and set them
     const originPlace = originAutoCompleteRef.current?.getPlace();
@@ -97,6 +115,9 @@ export default function Ride() {
     setDirectionsResponse(null);
     setDistance('');
     setDuration('');
+    setCost('');
+    setRideAccepted(false);
+    setAssignedDriverData(null);
     if (originRef.current) originRef.current.value = '';
     if (destinationRef.current) destinationRef.current.value = '';
   }
@@ -189,6 +210,7 @@ export default function Ride() {
             <p className="text-sm">Distance: {distance}</p>
             <p className="text-sm">Duration: {duration}</p>
             <p className="text-sm">Price: {cost}</p>
+            {rideAccepted && <p className="text-sm text-green-500">Ride accepted by driver!</p>}
           </div>
         </div>
 
@@ -220,8 +242,12 @@ export default function Ride() {
         </div>
       </div>
       {/* Render SearchingModal only when originCoords is set */}
-      {originCoords && (
-        <SearchingModal userCoords={originCoords} pickupLocation={pickupLocation} dropoffLocation={dropoffLocation} />
+      {originCoords && !rideAccepted && (
+        <SearchingModal 
+          userCoords={originCoords} 
+          pickupLocation={pickupLocation} 
+          dropoffLocation={dropoffLocation} 
+        />
       )}
     </Container>
   );

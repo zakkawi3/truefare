@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Container from './Container';
 import axios from 'axios';
 import { io } from 'socket.io-client';
+import toast from 'react-hot-toast';
 
 const Drive = () => {
   const [isDriving, setIsDriving] = useState(false);
@@ -20,8 +21,8 @@ const Drive = () => {
 
       newSocket.emit('startDrive', { driverID });
       
-      newSocket.on('rideAcceptedNotification', (data) => {
-        console.log('Ride accepted by rider, received data:', data);
+      newSocket.on('rideRequestFromRider', (data) => {
+        console.log('New ride request from rider:', data);
         setRiderData({
           riderID: data.riderID || 'N/A',
           distance: data.distance || 'N/A',
@@ -29,6 +30,7 @@ const Drive = () => {
           dropoffLocation: data.dropoffLocation || 'N/A',
         });
         setShowRideRequest(true);
+        toast.success('New ride request received! Accept or reject.');
       });
 
       return () => {
@@ -137,6 +139,20 @@ const Drive = () => {
             <p>Distance: {riderData.distance}</p>
             <p>Pickup Location: {riderData.pickupLocation}</p>
             <p>Dropoff Location: {riderData.dropoffLocation}</p>
+            <div className="mt-4 flex gap-4 justify-center">
+              <button
+                className="bg-green-500 text-white rounded-lg py-2 px-4 hover:bg-green-600"
+                onClick={handleAcceptRide}
+              >
+                Accept
+              </button>
+              <button
+                className="bg-red-500 text-white rounded-lg py-2 px-4 hover:bg-red-600"
+                onClick={handleRejectRide}
+              >
+                Reject
+              </button>
+            </div>
           </div>
         )}
       </div>

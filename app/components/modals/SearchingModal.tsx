@@ -8,12 +8,14 @@ import useSearchingModal from '@/app/hooks/useSearchingModal';
 import Modal from './Modal';
 import toast from 'react-hot-toast';
 
-const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
+const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation, onRideAccepted }) => { // Added onRideAccepted callback
   const searchingModal = useSearchingModal();
   const [isLoading, setIsLoading] = useState(false);
   const [socket, setSocket] = useState(null);
   const [driverData, setDriverData] = useState(null);
   const [intervalId, setIntervalId] = useState(null);
+  const [waitingForDriverResponse, setWaitingForDriverResponse] = useState(false); 
+  const [driverResponseMessage, setDriverResponseMessage] = useState('');
 
   const { register, formState: { errors } } = useForm<FieldValues>({
     defaultValues: {
@@ -25,9 +27,8 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
   });
 
   const pollClosestDriver = useCallback(async () => {
-    if (!userCoords?.lat || !userCoords?.lng) {
-      console.error("User coordinates are missing at pollClosestDriver.");
-      return;
+    if (!userCoords?.lat || !userCoords?.lng || waitingForDriverResponse) {
+      return; // Skip polling if we're waiting for driver response
     }
 
     console.log('Polling http://localhost:3000/api/closestDriver with coordinates:', userCoords);
@@ -49,7 +50,7 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [userCoords]);
+  }, [userCoords, waitingForDriverResponse]);
 
   useEffect(() => {
     if (searchingModal.isOpen) {
@@ -63,16 +64,29 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
         toast.success('Driver found! Ride assigned.', { id: 'assigned-toast' });
       });
 
+      // Listen for driver acceptance or rejection
+      newSocket.on('driverAccepted', (rideInfo) => {
+        setDriverResponseMessage('Driver accepted your ride!');
+        setWaitingForDriverResponse(false); // Reset waiting state
+        onRideAccepted(rideInfo); // Pass ride info to parent component or rider page
+        searchingModal.onClose(); // Close modal
+      });
+
+      newSocket.on('driverRejected', () => {
+        setDriverResponseMessage('Driver rejected your ride.');
+        setWaitingForDriverResponse(false); // Resume polling after rejection
+      });
+
       return () => {
         console.log("Closing WebSocket connection...");
         newSocket.disconnect();
         setSocket(null);
       };
     }
-  }, [searchingModal.isOpen, intervalId]);
+  }, [searchingModal.isOpen, intervalId, onRideAccepted]);
 
   useEffect(() => {
-    if (searchingModal.isOpen && !intervalId) {
+    if (searchingModal.isOpen && !intervalId && !waitingForDriverResponse) {
       console.log("Starting polling interval...");
       const id = setInterval(pollClosestDriver, 5000); 
       setIntervalId(id);
@@ -85,7 +99,7 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
         setIntervalId(null);
       }
     };
-  }, [searchingModal.isOpen, intervalId, pollClosestDriver]);
+  }, [searchingModal.isOpen, intervalId, pollClosestDriver, waitingForDriverResponse]);
 
   const handleAcceptRide = () => {
     if (socket && driverData) {
@@ -111,8 +125,8 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
         dropoffLocation,
       });
 
-      toast.success("Ride accepted!");
-      searchingModal.onClose();
+      toast.success("Ride accepted! Waiting for driver's response...");
+      setWaitingForDriverResponse(true); // Pause polling to wait for driver response
     } else {
       console.error("Driver or Socket information is missing.");
     }
@@ -147,6 +161,12 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
           </div>
         ) : (
           <p></p>
+        )}
+        {/* Display the driver response message if it exists */}
+        {driverResponseMessage && (
+          <div className="mt-4 text-lg font-semibold text-center text-gray-700">
+            {driverResponseMessage}
+          </div>
         )}
       </div>
     </div>
