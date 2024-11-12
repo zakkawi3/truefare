@@ -180,28 +180,30 @@ export default function Ride() {
             </Autocomplete>
           )}
         </div>
-
-        <div className="flex flex-col lg:flex-row lg:space-x-4 mt-4">
+        <div className="flex flex-col lg:flex-row items-center gap-2 lg:gap-4">
           <button
-            className="bg-blue-500 text-white rounded-lg py-2 px-4 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2 lg:mb-0"
+            className="bg-blue-500 text-white rounded-lg py-2 px-6 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full lg:w-auto"
             onClick={calculateRoute}
           >
             Search for Rides
           </button>
+          
           <button
-            className="bg-red-500 text-white rounded-lg py-2 px-4 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 mb-2 lg:mb-0"
+            className="bg-red-500 text-white rounded-lg py-2 px-6 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 w-full lg:w-auto"
             onClick={clearRoute}
           >
             Clear Route
           </button>
+          
           <button
-            className="bg-gray-500 text-white rounded-lg py-2 px-4 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 flex items-center"
+            className="bg-gray-500 text-white rounded-lg py-2 px-6 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 flex items-center justify-center w-full lg:w-auto"
             onClick={recenterMap}
           >
             <FaLocationArrow className="mr-2" />
             Re-center
           </button>
         </div>
+
 
         {/* <div className="mt-4 text-sm text-gray-600">
           <p><strong>Distance:</strong> {distance}</p>

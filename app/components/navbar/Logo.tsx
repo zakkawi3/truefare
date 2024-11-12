@@ -7,17 +7,17 @@ const Logo = () => {
   const router = useRouter();
 
   const handleLogoClick = () => {
-      router.push('/'); // Navigate to home page
+      router.push('/');
   };
 
   return (
       <div
-          onClick={handleLogoClick} // Attach the onClick event
+          onClick={handleLogoClick}
           className="cursor-pointer"
       >
           <Image
               alt="Logo"
-              className="hidden md:block cursor-pointer"
+              className="cursor-pointer"
               height="100"
               width="100"
               src="/images/logo.png"
@@ -27,3 +27,4 @@ const Logo = () => {
 }
 
 export default Logo;
+
