@@ -55,7 +55,6 @@ const PaymentModal = () => {
         <Heading
           title="Payment Details"
           subtitle="Enter your payment information"
-          className="text-center"
         />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-md">
           <Input
