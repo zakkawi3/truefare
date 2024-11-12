@@ -125,32 +125,48 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
   };
 
   const bodyContent = (
-    <div className="flex flex-col gap-4">
-      <div id="distance" className="text-lg">
-        <label className="font-medium">Searching for a driver...</label>
-        {driverData ? (
-          <div>
-            <p>Driver found: {driverData.driverID}, Distance: {driverData.distance}</p>
-            <div className="mt-4 flex gap-4">
-              <button
-                className="bg-blue-500 text-white rounded-lg py-2 px-4 hover:bg-blue-600"
-                onClick={handleAcceptRide}
-              >
-                Accept
-              </button>
-              <button
-                className="bg-red-500 text-white rounded-lg py-2 px-4 hover:bg-red-600"
-                onClick={handleDeclineRide}
-              >
-                Reject
-              </button>
-            </div>
-          </div>
-        ) : (
-          <p>Searching...</p>
-        )}
-      </div>
+    <div className="flex flex-col gap-6 p-4 text-center">
+      <h2 className="text-xl font-semibold text-gray-800">Searching for a driver...</h2>
+      {driverData ? (
+        <div className="space-y-4">
+          <p className="text-lg font-medium text-green-700">Driver found!</p>
+          <p className="text-gray-600">
+            <span className="font-semibold">Driver ID:</span> {driverData.driverID}
+          </p>
+          <p className="text-gray-600">
+            <span className="font-semibold">Distance:</span> {driverData.distance}
+          </p>
+        </div>
+      ) : (
+        <p className="text-gray-500">We’re currently looking for available drivers...</p>
+      )}
     </div>
+    // <div className="flex flex-col gap-4">
+    //   <div id="distance" className="text-lg">
+    //     <label className="font-medium">Searching for a driver...</label>
+    //     {driverData ? (
+    //       <div>
+    //         <p>Driver found: {driverData.driverID}, Distance: {driverData.distance}</p>
+    //         <div className="mt-4 flex gap-4">
+    //           <button
+    //             className="bg-blue-500 text-white rounded-lg py-2 px-4 hover:bg-blue-600"
+    //             onClick={handleAcceptRide}
+    //           >
+    //             Accept
+    //           </button>
+    //           <button
+    //             className="bg-red-500 text-white rounded-lg py-2 px-4 hover:bg-red-600"
+    //             onClick={handleDeclineRide}
+    //           >
+    //             Reject
+    //           </button>
+    //         </div>
+    //       </div>
+    //     ) : (
+    //       <p></p>
+    //     )}
+    //   </div>
+    // </div>
   );
 
   return (
@@ -162,7 +178,7 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
       onClose={() => searchingModal.onClose()}
       onSubmit={() => searchingModal.onClose()}
       body={bodyContent}
-      actionClassName="bg-blue-500 text-white hover:bg-blue-600 border-blue-500"
+      actionClassName="bg-red-500 text-white hover:bg-red-600 border-red-500 font-semibold py-2 px-4 rounded-lg transition-colors"
     />
   );
 };

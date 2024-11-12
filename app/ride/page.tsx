@@ -142,105 +142,105 @@ export default function Ride() {
 
   return (
     <Container>
-      <div className="flex flex-row justify-between w-full h-full p-8">
-        {/* Left Side */}
-        <div className="flex flex-col w-1/2 space-y-4">
-          <h1 className="text-2xl font-bold">Ride Registration</h1>
+    <div className="flex flex-col lg:flex-row justify-between w-full h-full p-4 lg:p-8 space-y-6 lg:space-y-0">
+      {/* Left Side: Form Section */}
+      <div className="flex flex-col w-full lg:w-1/2 space-y-4">
+        <h1 className="text-2xl font-bold">Ride Registration</h1>
 
-          <div className="flex flex-col space-y-2">
-            <label className="text-sm font-medium">Pickup Location</label>
-            {isLoaded && (
-              <Autocomplete
-                onLoad={(autocomplete) => (originAutoCompleteRef.current = autocomplete)}
-                onPlaceChanged={handleOriginPlaceChanged}
-              >
-                <input
-                  type="text"
-                  ref={originRef}
-                  className="border border-gray-300 rounded-lg p-2"
-                  placeholder="Enter pickup location"
-                />
-              </Autocomplete>
-            )}
-          </div>
-
-          <div className="flex flex-col space-y-2">
-            <label className="text-sm font-medium">Drop-off Location</label>
-            {isLoaded && (
-              <Autocomplete
-                onLoad={(autocomplete) => (destinationAutoCompleteRef.current = autocomplete)}
-                onPlaceChanged={handleDestinationPlaceChanged}
-              >
-                <input
-                  type="text"
-                  ref={destinationRef}
-                  className="border border-gray-300 rounded-lg p-2"
-                  placeholder="Enter drop-off location"
-                />
-              </Autocomplete>
-            )}
-          </div>
-
-          <div className="flex space-x-4 mt-4">
-            <button
-              className="bg-blue-500 text-white rounded-lg py-2 px-4 hover:bg-blue-600"
-              onClick={calculateRoute}
+        <div className="flex flex-col space-y-2">
+          <label className="text-sm font-medium">Pickup Location</label>
+          {isLoaded && (
+            <Autocomplete
+              onLoad={(autocomplete) => (originAutoCompleteRef.current = autocomplete)}
+              onPlaceChanged={handleOriginPlaceChanged}
             >
-              Search for Rides
-            </button>
-            <button
-              className="bg-red-500 text-white rounded-lg py-2 px-4 hover:bg-red-600"
-              onClick={clearRoute}
-            >
-              Clear Route
-            </button>
-            <button
-              className="bg-gray-500 text-white rounded-lg py-2 px-4 hover:bg-gray-600 flex items-center"
-              onClick={recenterMap}
-            >
-              <FaLocationArrow className="mr-2" />
-              Re-center
-            </button>
-          </div>
-
-          <div className="mt-4">
-            <p className="text-sm">Distance: {distance}</p>
-            <p className="text-sm">Duration: {duration}</p>
-            <p className="text-sm">Price: {cost}</p>
-          </div>
+              <input
+                type="text"
+                ref={originRef}
+                className="border border-gray-300 rounded-lg p-2 focus:outline-none focus:border-blue-500 w-full"
+                placeholder="Enter pickup location"
+              />
+            </Autocomplete>
+          )}
         </div>
 
-        {/* Right Side */}
-        <div className="flex w-1/2 justify-center">
-          <div style={{ width: '500px', height: '500px' }} className="rounded-lg bg-gray-200">
-            {!isLoaded ? (
-              <div className="flex items-center justify-center h-full">
-                <p>Loading map...</p>
-              </div>
-            ) : (
-              <GoogleMap
-                center={center}
-                zoom={15}
-                mapContainerStyle={{ width: '100%', height: '100%' }}
-                onLoad={map => setMap(map)}
-                options={{
-                  zoomControl: false,
-                  streetViewControl: false,
-                  mapTypeControl: false,
-                  fullscreenControl: false,
-                }}
-              >
-                <Marker position={center} />
-                {directionsResponse && <DirectionsRenderer directions={directionsResponse} />}
-              </GoogleMap>
-            )}
-          </div>
+        <div className="flex flex-col space-y-2">
+          <label className="text-sm font-medium">Drop-off Location</label>
+          {isLoaded && (
+            <Autocomplete
+              onLoad={(autocomplete) => (destinationAutoCompleteRef.current = autocomplete)}
+              onPlaceChanged={handleDestinationPlaceChanged}
+            >
+              <input
+                type="text"
+                ref={destinationRef}
+                className="border border-gray-300 rounded-lg p-2 focus:outline-none focus:border-blue-500 w-full"
+                placeholder="Enter drop-off location"
+              />
+            </Autocomplete>
+          )}
+        </div>
+
+        <div className="flex flex-col lg:flex-row lg:space-x-4 mt-4">
+          <button
+            className="bg-blue-500 text-white rounded-lg py-2 px-4 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2 lg:mb-0"
+            onClick={calculateRoute}
+          >
+            Search for Rides
+          </button>
+          <button
+            className="bg-red-500 text-white rounded-lg py-2 px-4 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 mb-2 lg:mb-0"
+            onClick={clearRoute}
+          >
+            Clear Route
+          </button>
+          <button
+            className="bg-gray-500 text-white rounded-lg py-2 px-4 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 flex items-center"
+            onClick={recenterMap}
+          >
+            <FaLocationArrow className="mr-2" />
+            Re-center
+          </button>
+        </div>
+
+        {/* <div className="mt-4 text-sm text-gray-600">
+          <p><strong>Distance:</strong> {distance}</p>
+          <p><strong>Duration:</strong> {duration}</p>
+          <p><strong>Price:</strong> {cost}</p>
+        </div> */}
+      </div>
+
+      {/* Right Side: Map Section */}
+      <div className="flex w-full lg:w-1/2 justify-center">
+        <div className="w-full h-[300px] sm:h-[400px] lg:w-[450px] lg:h-[450px] rounded-lg bg-gray-200">
+          {!isLoaded ? (
+            <div className="flex items-center justify-center h-full">
+              <p>Loading map...</p>
+            </div>
+          ) : (
+            <GoogleMap
+              center={center}
+              zoom={15}
+              mapContainerStyle={{ width: '100%', height: '100%' }}
+              onLoad={(map) => setMap(map)}
+              options={{
+                zoomControl: false,
+                streetViewControl: false,
+                mapTypeControl: false,
+                fullscreenControl: false,
+              }}
+            >
+              <Marker position={center} />
+              {directionsResponse && <DirectionsRenderer directions={directionsResponse} />}
+            </GoogleMap>
+          )}
         </div>
       </div>
-      {/* Render SearchingModal only when originCoords is set */}
-      {originCoords && (
-        <SearchingModal userCoords={originCoords} pickupLocation={pickupLocation} dropoffLocation={dropoffLocation} />
-      )}
-    </Container>
+    </div>
+
+    {originCoords && (
+      <SearchingModal userCoords={originCoords} pickupLocation={pickupLocation} dropoffLocation={dropoffLocation} />
+    )}
+  </Container>
   );
 }

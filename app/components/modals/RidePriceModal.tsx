@@ -38,18 +38,20 @@ const RidePriceModal = () => {
   };
 
   const bodyContent = (
-    <div className="flex flex-col gap-4">
-      <div id="distance" className="text-lg">
-        <label className="font-medium">Distance:</label>
-        <p>{distance}</p>
-      </div>
-      <div id="time" className="text-lg">
-        <label className="font-medium">Time:</label>
-        <p>{duration}</p>
-      </div>
-      <div id="pay" className="text-lg">
-        <label className="font-medium">Price:</label>
-        <p>{cost}</p>
+    <div className="flex flex-col gap-6 text-gray-800">
+      <p className="text-center text-sm text-gray-500">
+        Review the details of your ride below.
+      </p>
+      <div className="flex flex-col items-center space-y-3 bg-gray-100 p-4 rounded-lg">
+        <div id="distance" className="text-xl font-medium">
+          <span className="text-gray-600">Distance:</span> {distance}
+        </div>
+        <div id="time" className="text-xl font-medium">
+          <span className="text-gray-600">Estimated Time:</span> {duration}
+        </div>
+        <div id="pay" className="text-xl font-medium">
+          <span className="text-gray-600">Total Cost:</span> {cost}
+        </div>
       </div>
     </div>
   );
