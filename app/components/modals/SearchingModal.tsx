@@ -15,7 +15,7 @@ type UserCoords = {
 };
 
 interface SearchingModalProps {
-  userCoords: UserCoords;
+  userCoords?: UserCoords;  // Allow userCoords to be undefined
   pickupLocation: string;
   dropoffLocation: string;
 }
@@ -35,22 +35,24 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }: Searchi
   const [driverData, setDriverData] = useState<DriverData | null>(null);  // Define driverData type
   const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);  // Type intervalId correctly
 
-  const hardcodedLat = 33.7490; // Atlanta latitude
-  const hardcodedLng = -84.3880; // Atlanta longitude
+  // Fallback values for missing coordinates
+  const defaultCoords = { lat: 33.7490, lng: -84.3880 }; // Atlanta coordinates
 
   const pollClosestDriver = useCallback(async () => {
-    if (!userCoords?.lat || !userCoords?.lng) {
+    const coords = userCoords || defaultCoords;
+
+    if (!coords.lat || !coords.lng) {
       console.error("User coordinates are missing at pollClosestDriver.");
       return;
     }
 
-    console.log('Polling https://octopus-app-agn55.ondigitalocean.app/riders/closestDriver', userCoords);
+    console.log('Polling for closest driver:', coords);
     setIsLoading(true);
     try {
       const response = await axios.get('https://octopus-app-agn55.ondigitalocean.app/riders/closestDriver', { 
         params: {
-          userLat: hardcodedLat,
-          userLng: hardcodedLng,
+          userLat: coords.lat,
+          userLng: coords.lng,
         },
       });
 
@@ -69,7 +71,7 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }: Searchi
     } finally {
       setIsLoading(false);
     }
-  }, [userCoords, intervalId, hardcodedLng]);  // Added hardcodedLng to dependencies
+  }, [userCoords, intervalId]);  // Removed hardcodedLng as it's now handled by userCoords
 
   useEffect(() => {
     if (searchingModal.isOpen) {

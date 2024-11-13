@@ -9,10 +9,8 @@ import LoginModal from "./components/modals/LoginModal";
 import RideModal from "./components/modals/RideModal";
 import RidePriceModal from "./components/modals/RidePriceModal";
 import SearchingModal from "./components/modals/SearchingModal";
-import DriverAssignmentModal from "./components/modals/DriverAssignmentModal";
 import PaymentModal from "./components/modals/PaymentModal";
-// Removed unused import of `FieldValues`
-// import { FieldValues } from "react-hook-form";
+import DriverAssignmentModal from "./components/modals/DriverAssignmentModal";
 
 const font = Nunito({
   subsets: ["latin"],
@@ -37,7 +35,8 @@ export default function RootLayout({
           <LoginModal />
           <RideModal />
           <RidePriceModal />
-          <SearchingModal userCoords={undefined} pickupLocation={undefined} dropoffLocation={undefined} />
+          {/* Passing default userCoords to SearchingModal */}
+          <SearchingModal userCoords={{ lat: 33.7490, lng: -84.3880 }} pickupLocation={""} dropoffLocation={""} />
           <PaymentModal />
           <DriverAssignmentModal />
           <Navbar />
