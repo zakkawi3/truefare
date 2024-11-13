@@ -1,8 +1,8 @@
 'use client';
+
 import { io } from 'socket.io-client';
 import axios from 'axios';
 import { useState, useEffect, useCallback } from 'react';
-import { FieldValues, useForm } from 'react-hook-form';
 
 import useSearchingModal from '@/app/hooks/useSearchingModal';
 import Modal from './Modal';
@@ -49,7 +49,7 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [userCoords, intervalId]);  // Added intervalId and userCoords to dependencies
+  }, [userCoords, intervalId, hardcodedLng]);  // Added hardcodedLng to dependencies
 
 
   useEffect(() => {

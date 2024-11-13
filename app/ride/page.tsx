@@ -7,7 +7,6 @@ import { useJsApiLoader, GoogleMap, Marker, DirectionsRenderer, Autocomplete } f
 import useRidePriceModal from '../hooks/useRidePriceModal';
 import useDriverAssignmentModal from '../hooks/useDriverAssignmentModal';
 import { io } from 'socket.io-client';
-import SearchingModal from '../components/modals/SearchingModal';
 
 const center = { lat: 33.7501, lng: -84.3880 };
 
@@ -17,8 +16,6 @@ export default function Ride() {
   const ridePriceModal = useRidePriceModal();
   const driverAssignmentModal = useDriverAssignmentModal();
   const [originCoords, setOriginCoords] = useState<{ lat: number, lng: number } | null>(null);
-  const [pickupLocation, setPickupLocation] = useState('');
-  const [dropoffLocation, setDropoffLocation] = useState('');
 
   const originRef = useRef<HTMLInputElement>(null);
   const destinationRef = useRef<HTMLInputElement>(null);
@@ -67,7 +64,6 @@ export default function Ride() {
     const distanceText = results.routes[0].legs[0].distance.text;
     const durationText = results.routes[0].legs[0].duration.text;
 
-    // Call backend API for price calculation
     try {
       const response = await fetch(`https://octopus-app-agn55.ondigitalocean.app/riders/calculatePrice?pickupLat=${results.routes[0].legs[0].start_location.lat()}&pickupLng=${results.routes[0].legs[0].start_location.lng()}&dropoffLat=${results.routes[0].legs[0].end_location.lat()}&dropoffLng=${results.routes[0].legs[0].end_location.lng()}`);
       const data = await response.json();
@@ -75,10 +71,6 @@ export default function Ride() {
       if (response.ok) {
         const calculatedCost = `$${data.price}`;
         ridePriceModal.onOpen(distanceText, durationText, calculatedCost);
-
-        // Store pickup/dropoff locations and origin coordinates
-        setPickupLocation(originRef.current.value);
-        setDropoffLocation(destinationRef.current.value);
 
         const originPlace = originAutoCompleteRef.current?.getPlace();
         if (originPlace && originPlace.geometry) {
@@ -124,7 +116,6 @@ export default function Ride() {
   return (
     <Container>
       <div className="flex flex-col lg:flex-row justify-between w-full h-full p-4 lg:p-8 space-y-6 lg:space-y-0">
-        {/* Form Section */}
         <div className="flex flex-col w-full lg:w-1/2 space-y-4">
           <h1 className="text-2xl font-bold">Ride Registration</h1>
           <div className="flex flex-col space-y-2">
@@ -170,7 +161,6 @@ export default function Ride() {
           </div>
         </div>
 
-        {/* Map Section */}
         <div className="w-full lg:w-1/2 h-full">
           {isLoaded && (
             <GoogleMap

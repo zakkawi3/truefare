@@ -5,18 +5,26 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import useDriverAssignmentModal from '@/app/hooks/useDriverAssignmentModal';
 import Modal from './Modal';
 
+// Define the form data interface
+interface DriverAssignmentFormData {
+  distance: string;
+  pay: string;
+}
+
 const DriverAssignment = () => {
   const driverAssignmentModal = useDriverAssignmentModal();
   const [isLoading, setIsLoading] = useState(false);
 
-  const { handleSubmit } = useForm({
+  // Use the DriverAssignmentFormData interface for form data
+  const { handleSubmit } = useForm<DriverAssignmentFormData>({
     defaultValues: {
       distance: '',
       pay: '',
     },
   });
 
-  const onSubmit: SubmitHandler<{}> = () => {
+  // Update the onSubmit handler to use DriverAssignmentFormData
+  const onSubmit: SubmitHandler<DriverAssignmentFormData> = (data) => {
     setIsLoading(true);
 
     // Close RidePriceModal and open SearchingModal
@@ -25,6 +33,7 @@ const DriverAssignment = () => {
     setIsLoading(false);
   };
 
+  // Modal content body
   const bodyContent = (
     <div className="flex flex-col gap-4">
       <div id="distance" className="text-lg">

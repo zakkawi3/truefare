@@ -7,10 +7,9 @@ import { io, Socket } from 'socket.io-client';
 
 const Drive = () => {
   const [isDriving, setIsDriving] = useState(false);
-  const [location, setLocation] = useState<{ lat: number | null; lng: number | null }>({ lat: null, lng: null });
-  const socketRef = useRef<Socket | null>(null);
   const [showRideRequest, setShowRideRequest] = useState(false);
   const [riderData, setRiderData] = useState<{ riderID?: string; distance?: string; pickupLocation?: string; dropoffLocation?: string }>({});
+  const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
     const setupSocket = async () => {
@@ -75,8 +74,6 @@ const Drive = () => {
         async (position) => {
           const userLat = position.coords.latitude;
           const userLng = position.coords.longitude;
-
-          setLocation({ lat: userLat, lng: userLng });
           console.log('Driver location:', { userLat, userLng });
 
           try {

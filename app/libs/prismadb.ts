@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 
 declare global {
+    // eslint-disable-next-line no-var
     var prisma: PrismaClient | undefined;
     interface Window {
         currentUserEmail: string | null;
@@ -8,8 +9,6 @@ declare global {
 }
 
 const client = globalThis.prisma || new PrismaClient();
-if (process.env.NODE_ENV !== 'production') {
-    globalThis.prisma = client; // `prisma` is now declared as `let` or `const` in global scope
-}
+if (process.env.NODE_ENV !== 'production') globalThis.prisma = client;
 
 export default client;
