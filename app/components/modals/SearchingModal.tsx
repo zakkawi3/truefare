@@ -1,4 +1,4 @@
-'use client';
+'use-client';
 
 import { io, Socket } from 'socket.io-client';
 import axios from 'axios';
@@ -8,7 +8,6 @@ import useSearchingModal from '@/app/hooks/useSearchingModal';
 import Modal from './Modal';
 import toast from 'react-hot-toast';
 
-// Type definitions for props
 type UserCoords = {
   lat: number;
   lng: number;
@@ -23,12 +22,12 @@ interface SearchingModalProps {
 const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }: SearchingModalProps) => {
   const searchingModal = useSearchingModal();
   const [isLoading, setIsLoading] = useState(false);
-  const [socket, setSocket] = useState<Socket | null>(null);  // Define socket type
+  const [socket, setSocket] = useState<Socket | null>(null);
   const [driverData, setDriverData] = useState(null);
-  const [intervalId, setIntervalId] = useState(null);
+  const [intervalId, setIntervalId] = useState<NodeJS.Timeout | number | null>(null); // Fix the type here
 
-  const hardcodedLat = 33.7490; // Atlanta latitude
-  const hardcodedLng = -84.3880; // Atlanta longitude
+  const hardcodedLat = 33.7490;
+  const hardcodedLng = -84.3880;
 
   const pollClosestDriver = useCallback(async () => {
     if (!userCoords?.lat || !userCoords?.lng) {
@@ -50,7 +49,6 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }: Searchi
       setDriverData(response.data); 
       toast.success('Searching for closest driver...', { id: 'searching-toast' });
 
-      // Stop polling after finding a driver
       if (intervalId) {
         clearInterval(intervalId);
         setIntervalId(null);
@@ -61,8 +59,7 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }: Searchi
     } finally {
       setIsLoading(false);
     }
-  }, [userCoords, intervalId, hardcodedLng]);  // Added hardcodedLng to dependencies
-
+  }, [userCoords, intervalId, hardcodedLng]);
 
   useEffect(() => {
     if (searchingModal.isOpen) {
