@@ -8,7 +8,19 @@ import useSearchingModal from '@/app/hooks/useSearchingModal';
 import Modal from './Modal';
 import toast from 'react-hot-toast';
 
-const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
+// Type definitions for props
+type UserCoords = {
+  lat: number;
+  lng: number;
+};
+
+interface SearchingModalProps {
+  userCoords: UserCoords;
+  pickupLocation: string;
+  dropoffLocation: string;
+}
+
+const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }: SearchingModalProps) => {
   const searchingModal = useSearchingModal();
   const [isLoading, setIsLoading] = useState(false);
   const [socket, setSocket] = useState(null);
