@@ -15,6 +15,10 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
   const [driverData, setDriverData] = useState(null);
   const [intervalId, setIntervalId] = useState(null);
 
+  const hardcodedLat = 33.7490; // Atlanta latitude
+  const hardcodedLng = -84.3880; // Atlanta longitude
+  
+
   const { register, formState: { errors } } = useForm<FieldValues>({
     defaultValues: {
       distance: '',
@@ -35,14 +39,20 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
     try {
       const response = await axios.get('https://octopus-app-agn55.ondigitalocean.app/riders/closestDriver', { 
         params: {
-          userLat: userCoords.lat,
-          userLng: userCoords.lng,
+          userLat: hardcodedLat,
+          userLng: hardcodedLng,
         },
       });
   
       console.log('Received response from /riders/closestDriver:', response.data);
       setDriverData(response.data); 
       toast.success('Searching for closest driver...', { id: 'searching-toast' });
+
+      // Stop polling after finding a driver
+      if (intervalId) {
+        clearInterval(intervalId);
+        setIntervalId(null);
+      }
     } catch (error) {
       console.error('Error finding driver:', error);
       toast.error('Something went wrong', { id: 'error-toast' });

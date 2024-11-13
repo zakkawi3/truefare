@@ -61,7 +61,7 @@ const RidePriceModal = () => {
       disabled={isLoading}
       isOpen={ridePriceModal.isOpen}
       title="Ride Information"
-      actionLabel="Continue"
+      actionLabel="Confirm Ride"
       onClose={ridePriceModal.onClose}
       onSubmit={handleSubmit(onSubmit)}
       body={bodyContent}
