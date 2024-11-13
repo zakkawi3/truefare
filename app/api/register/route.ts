@@ -3,10 +3,10 @@ import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
     try {
-        const { email, name, password, cardNumber } = await request.json();
+        const { email, name, password, phoneNumber } = await request.json();
 
         // Make the request to the external API without hashing the password
-        console.log(cardNumber);
+        console.log(phoneNumber);
         const response = await fetch('https://octopus-app-agn55.ondigitalocean.app/users/create', {
             method: 'POST',
             headers: {
@@ -15,7 +15,7 @@ export async function POST(request: Request) {
             body: JSON.stringify({
                 email,
                 name,
-                cardNumber,
+                phoneNumber,
                 password  // Send plaintext password; the backend will hash it
             }),
         });
