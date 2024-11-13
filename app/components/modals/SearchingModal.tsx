@@ -1,29 +1,9 @@
-'use client';
-
-import { io } from 'socket.io-client';
-import axios from 'axios';
-import { useState, useEffect, useCallback } from 'react';
-
-import useSearchingModal from '@/app/hooks/useSearchingModal';
-import Modal from './Modal';
-import toast from 'react-hot-toast';
-
-// Type definitions for props
-type UserCoords = {
-  lat: number;
-  lng: number;
-};
-
-interface SearchingModalProps {
-  userCoords: UserCoords;
-  pickupLocation: string;
-  dropoffLocation: string;
-}
+import { io, Socket } from 'socket.io-client';  // Import Socket type
 
 const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }: SearchingModalProps) => {
   const searchingModal = useSearchingModal();
   const [isLoading, setIsLoading] = useState(false);
-  const [socket, setSocket] = useState(null);
+  const [socket, setSocket] = useState<Socket | null>(null);  // Define socket type
   const [driverData, setDriverData] = useState(null);
   const [intervalId, setIntervalId] = useState(null);
 
@@ -35,7 +15,7 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }: Searchi
       console.error("User coordinates are missing at pollClosestDriver.");
       return;
     }
-  
+
     console.log('Polling https://octopus-app-agn55.ondigitalocean.app/riders/closestDriver', userCoords);
     setIsLoading(true);
     try {
@@ -45,7 +25,7 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }: Searchi
           userLng: hardcodedLng,
         },
       });
-  
+
       console.log('Received response from /riders/closestDriver:', response.data);
       setDriverData(response.data); 
       toast.success('Searching for closest driver...', { id: 'searching-toast' });
