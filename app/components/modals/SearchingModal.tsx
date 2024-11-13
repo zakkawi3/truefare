@@ -1,4 +1,24 @@
-import { io, Socket } from 'socket.io-client';  // Import Socket type
+'use client';
+
+import { io } from 'socket.io-client';
+import axios from 'axios';
+import { useState, useEffect, useCallback } from 'react';
+
+import useSearchingModal from '@/app/hooks/useSearchingModal';
+import Modal from './Modal';
+import toast from 'react-hot-toast';
+
+// Type definitions for props
+type UserCoords = {
+  lat: number;
+  lng: number;
+};
+
+interface SearchingModalProps {
+  userCoords: UserCoords;
+  pickupLocation: string;
+  dropoffLocation: string;
+}
 
 const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }: SearchingModalProps) => {
   const searchingModal = useSearchingModal();
