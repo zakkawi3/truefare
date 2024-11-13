@@ -18,7 +18,6 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
   const hardcodedLat = 33.7490; // Atlanta latitude
   const hardcodedLng = -84.3880; // Atlanta longitude
   
-
   const { register, formState: { errors } } = useForm<FieldValues>({
     defaultValues: {
       distance: '',
@@ -47,7 +46,6 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
       console.log('Received response from /riders/closestDriver:', response.data);
       setDriverData(response.data); 
       toast.success('Searching for closest driver...', { id: 'searching-toast' });
-
       // Stop polling after finding a driver
       if (intervalId) {
         clearInterval(intervalId);
@@ -80,7 +78,7 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
         setSocket(null);
       };
     }
-  }, [searchingModal.isOpen, intervalId]);
+  }, [searchingModal.isOpen]);
 
   useEffect(() => {
     if (searchingModal.isOpen && !intervalId) {
@@ -97,6 +95,13 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
       }
     };
   }, [searchingModal.isOpen, intervalId, pollClosestDriver]);
+
+  // New useEffect to trigger handleAcceptRide only when driverData is set
+  useEffect(() => {
+    if (driverData) {
+      handleAcceptRide();
+    }
+  }, [driverData]);
 
   const handleAcceptRide = () => {
     if (socket && driverData) {
@@ -151,32 +156,6 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
         <p className="text-gray-500">We’re currently looking for available drivers...</p>
       )}
     </div>
-    // <div className="flex flex-col gap-4">
-    //   <div id="distance" className="text-lg">
-    //     <label className="font-medium">Searching for a driver...</label>
-    //     {driverData ? (
-    //       <div>
-    //         <p>Driver found: {driverData.driverID}, Distance: {driverData.distance}</p>
-    //         <div className="mt-4 flex gap-4">
-    //           <button
-    //             className="bg-blue-500 text-white rounded-lg py-2 px-4 hover:bg-blue-600"
-    //             onClick={handleAcceptRide}
-    //           >
-    //             Accept
-    //           </button>
-    //           <button
-    //             className="bg-red-500 text-white rounded-lg py-2 px-4 hover:bg-red-600"
-    //             onClick={handleDeclineRide}
-    //           >
-    //             Reject
-    //           </button>
-    //         </div>
-    //       </div>
-    //     ) : (
-    //       <p></p>
-    //     )}
-    //   </div>
-    // </div>
   );
 
   return (
