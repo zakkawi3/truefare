@@ -3,11 +3,12 @@
 import { io, Socket } from 'socket.io-client';
 import axios from 'axios';
 import { useState, useEffect, useCallback } from 'react';
+
 import useSearchingModal from '@/app/hooks/useSearchingModal';
 import Modal from './Modal';
 import toast from 'react-hot-toast';
 
-// Type definitions for props
+// Type definitions for props and driverData
 type UserCoords = {
   lat: number;
   lng: number;
@@ -19,11 +20,19 @@ interface SearchingModalProps {
   dropoffLocation: string;
 }
 
+interface DriverData {
+  driverID: string;
+  riderID?: string;
+  distance: string;
+  pickupLocation?: string;
+  dropoffLocation?: string;
+}
+
 const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }: SearchingModalProps) => {
   const searchingModal = useSearchingModal();
   const [isLoading, setIsLoading] = useState(false);
   const [socket, setSocket] = useState<Socket | null>(null);  // Define socket type
-  const [driverData, setDriverData] = useState(null);
+  const [driverData, setDriverData] = useState<DriverData | null>(null);  // Define driverData type
   const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);  // Type intervalId correctly
 
   const hardcodedLat = 33.7490; // Atlanta latitude
@@ -68,7 +77,7 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }: Searchi
       const newSocket = io('https://octopus-app-agn55.ondigitalocean.app');
       setSocket(newSocket);
 
-      newSocket.on('rideAssigned', (data) => {
+      newSocket.on('rideAssigned', (data: DriverData) => {
         console.log('Driver assigned:', data);
         setDriverData(data);
         toast.success('Driver found! Ride assigned.', { id: 'assigned-toast' });
