@@ -53,36 +53,40 @@ export default function Ride() {
     }
 
     const directionsService = new google.maps.DirectionsService();
-    const results = await directionsService.route({
-      origin: originRef.current.value,
-      destination: destinationRef.current.value,
-      travelMode: google.maps.TravelMode.DRIVING,
-    });
-
-    setDirectionsResponse(results);
-
-    const distanceText = results.routes[0].legs[0].distance.text;
-    const durationText = results.routes[0].legs[0].duration.text;
-
     try {
-      const response = await fetch(`https://octopus-app-agn55.ondigitalocean.app/riders/calculatePrice?pickupLat=${results.routes[0].legs[0].start_location.lat()}&pickupLng=${results.routes[0].legs[0].start_location.lng()}&dropoffLat=${results.routes[0].legs[0].end_location.lat()}&dropoffLng=${results.routes[0].legs[0].end_location.lng()}`);
-      const data = await response.json();
+      const results = await directionsService.route({
+        origin: originRef.current.value,
+        destination: destinationRef.current.value,
+        travelMode: google.maps.TravelMode.DRIVING,
+      });
 
-      if (response.ok) {
-        const calculatedCost = `$${data.price}`;
-        ridePriceModal.onOpen(distanceText, durationText, calculatedCost);
+      if (results?.routes?.[0]?.legs?.[0]) {
+        setDirectionsResponse(results);
 
-        const originPlace = originAutoCompleteRef.current?.getPlace();
-        if (originPlace && originPlace.geometry) {
-          const lat = originPlace.geometry.location.lat();
-          const lng = originPlace.geometry.location.lng();
-          setOriginCoords({ lat, lng });
+        const distanceText = results.routes[0].legs[0].distance.text;
+        const durationText = results.routes[0].legs[0].duration.text;
+
+        const response = await fetch(`https://octopus-app-agn55.ondigitalocean.app/riders/calculatePrice?pickupLat=${results.routes[0].legs[0].start_location.lat()}&pickupLng=${results.routes[0].legs[0].start_location.lng()}&dropoffLat=${results.routes[0].legs[0].end_location.lat()}&dropoffLng=${results.routes[0].legs[0].end_location.lng()}`);
+        const data = await response.json();
+
+        if (response.ok) {
+          const calculatedCost = `$${data.price}`;
+          ridePriceModal.onOpen(distanceText, durationText, calculatedCost);
+
+          const originPlace = originAutoCompleteRef.current?.getPlace();
+          if (originPlace && originPlace.geometry) {
+            const lat = originPlace.geometry.location.lat();
+            const lng = originPlace.geometry.location.lng();
+            setOriginCoords({ lat, lng });
+          }
+        } else {
+          console.error('Error calculating price:', data);
         }
       } else {
-        console.error('Error calculating price:', data);
+        console.error('Error: No valid route data.');
       }
     } catch (error) {
-      console.error('Error fetching price from API:', error);
+      console.error('Error fetching directions:', error);
     }
   }
 
