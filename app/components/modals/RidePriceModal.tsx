@@ -3,22 +3,16 @@
 import { useState } from 'react';
 import { FieldValues, SubmitHandler, useForm } from 'react-hook-form';
 import useRidePriceModal from '@/app/hooks/useRidePriceModal';
-import useSearchingModal from '@/app/hooks/useSearchingModal'; // Import SearchingModal hook
-import Modal from './Modal';
-import toast from 'react-hot-toast';
 import usePaymentModal from '@/app/hooks/usePaymentModal';
+import Modal from './Modal';
 
 const RidePriceModal = () => {
   const ridePriceModal = useRidePriceModal();
-  const searchingModal = useSearchingModal(); // Initialize SearchingModal
   const paymentModal = usePaymentModal();
   const [isLoading, setIsLoading] = useState(false);
-  const { isOpen, distance, duration, cost } = ridePriceModal;
 
   const {
-    register,
     handleSubmit,
-    formState: { errors },
   } = useForm<FieldValues>({
     defaultValues: {
       distance: '',
@@ -26,14 +20,13 @@ const RidePriceModal = () => {
     },
   });
 
-  const onSubmit: SubmitHandler<FieldValues> = (data) => {
+  const onSubmit: SubmitHandler<FieldValues> = () => {
     setIsLoading(true);
 
-    // Close RidePriceModal and open SearchingModal
+    // Close RidePriceModal and open PaymentModal
     ridePriceModal.onClose();
     paymentModal.onOpen();
-    //searchingModal.onOpen();
-    
+
     setIsLoading(false);
   };
 
@@ -44,13 +37,13 @@ const RidePriceModal = () => {
       </p>
       <div className="flex flex-col items-center space-y-3 bg-gray-100 p-4 rounded-lg">
         <div id="distance" className="text-xl font-medium">
-          <span className="text-gray-600">Distance:</span> {distance}
+          <span className="text-gray-600">Distance:</span> {ridePriceModal.distance}
         </div>
         <div id="time" className="text-xl font-medium">
-          <span className="text-gray-600">Estimated Time:</span> {duration}
+          <span className="text-gray-600">Estimated Time:</span> {ridePriceModal.duration}
         </div>
         <div id="pay" className="text-xl font-medium">
-          <span className="text-gray-600">Total Cost:</span> {cost}
+          <span className="text-gray-600">Total Cost:</span> {ridePriceModal.cost}
         </div>
       </div>
     </div>

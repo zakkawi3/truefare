@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import {Nunito} from "next/font/google"
+import { Nunito } from "next/font/google";
 import Navbar from "./components/navbar/Navbar";
 import ClientOnly from "./components/ClientOnly";
 import RegisterModal from "./components/modals/RegisterModal";
@@ -11,11 +11,12 @@ import RidePriceModal from "./components/modals/RidePriceModal";
 import SearchingModal from "./components/modals/SearchingModal";
 import DriverAssignmentModal from "./components/modals/DriverAssignmentModal";
 import PaymentModal from "./components/modals/PaymentModal";
-import { FieldValues } from "react-hook-form";
+// Removed unused import of `FieldValues`
+// import { FieldValues } from "react-hook-form";
 
 const font = Nunito({
   subsets: ["latin"],
-})
+});
 
 export const metadata: Metadata = {
   title: "Truefare",
@@ -28,7 +29,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en"> 
+    <html lang="en">
       <body className={font.className}>
         <ClientOnly>
           <ToasterProvider />
@@ -41,11 +42,10 @@ export default function RootLayout({
           <DriverAssignmentModal />
           <Navbar />
           <div className="pt-16"> {/* Adjust pt-16 based on your navbar height */}
-          {children}
-        </div>
+            {children}
+          </div>
         </ClientOnly>
       </body>
-
     </html>
   );
 }

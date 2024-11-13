@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';  // Import Next.js Image component
 import Container from './Container';
 
 const ContactUs = () => {
@@ -70,9 +71,11 @@ const ContactUs = () => {
             >
               {/* Image Container */}
               <div className="w-full h-auto">
-                <img
+                <Image
                   src={member.image}
                   alt={member.name}
+                  width={400}     // Specify width for the Image component
+                  height={400}    // Specify height for the Image component
                   className="w-full max-h-[400px] object-contain"
                 />
               </div>
@@ -115,7 +118,7 @@ const ContactUs = () => {
             <h2 className="text-2xl font-bold mb-4">Get In Touch</h2>
             <p className="text-gray-700 mb-6">
               Have questions about our platform or interested in becoming a driver? 
-              We'd love to hear from you!
+              We&apos;d love to hear from you!
             </p>
             <button className="bg-blue-600 text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-colors">
               Send Us a Message

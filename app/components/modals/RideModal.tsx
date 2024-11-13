@@ -2,11 +2,7 @@
 
 import axios from 'axios';
 import { useState } from 'react';
-import {
-  FieldValues,
-  SubmitHandler,
-  useForm
-} from 'react-hook-form';
+import { FieldValues, SubmitHandler, useForm } from 'react-hook-form';
 
 import useRideModal from '@/app/hooks/useRideModal';
 import Modal from './Modal';
@@ -18,9 +14,7 @@ const RideModal = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const {
-    register,
     handleSubmit,
-    formState: { errors },
   } = useForm<FieldValues>({
     defaultValues:{
         distance: '',
@@ -35,13 +29,13 @@ const RideModal = () => {
         .then(() => {
             rideModal.onClose();
         })
-        .catch((error) => {
+        .catch(() => {
             toast.error('Something went wrong');
         })
         .finally(() => {
             setIsLoading(false);
-        })
-  }
+        });
+  };
 
   const bodyContent = (
     <div className="flex flex-col gap-4">
@@ -55,7 +49,6 @@ const RideModal = () => {
       </div>
     </div>
   );
-  
 
   const footerContent = (
     <div className='flex flex-col gap-4 mt-4'>
@@ -77,8 +70,8 @@ const RideModal = () => {
         >
         </div>
     </div>
-  )
- 
+  );
+
   return (
     <Modal
         disabled={isLoading}

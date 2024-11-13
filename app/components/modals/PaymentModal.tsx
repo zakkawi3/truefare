@@ -12,7 +12,6 @@ import Modal from './Modal';
 import Heading from '../Heading';
 import Input from '../inputs/Input';
 import toast from 'react-hot-toast';
-import SearchingModal from './SearchingModal';
 import useSearchingModal from '@/app/hooks/useSearchingModal';
 
 const PaymentModal = () => {
@@ -33,16 +32,10 @@ const PaymentModal = () => {
       }
     });
   
-    const onSubmit: SubmitHandler<FieldValues> = (data) => {
+    const onSubmit: SubmitHandler<FieldValues> = () => {
       setIsLoading(true);
   
-      //Can use this if we want to create an aritifical timeout for processing
-      // Simulate API call or handle payment processing here
-    //   setTimeout(() => {
-    //     setIsLoading(false);
-    //     toast.success('Payment Submitted');
-    //     paymentModal.onClose();
-    //   }, 1000);
+      // Display a success toast message and close the PaymentModal, then open the SearchingModal.
       toast.success('Payment Submitted');
       paymentModal.onClose();
       searchingModal.onOpen();
@@ -91,55 +84,12 @@ const PaymentModal = () => {
           />
         </div>
       </div>
-      // <div className="flex flex-col gap-6 items-center sm:items-stretch p-4">
-      //   <Heading 
-      //     title="Enter Payment Details"
-      //     subtitle="Complete your payment information"
-      //   />
-      //   <Input 
-      //     id="cardNumber"
-      //     label="Card Number"
-      //     disabled={isLoading}
-      //     register={register}
-      //     errors={errors}
-      //     required
-      //   />
-      //   <Input 
-      //     id="expMonth"
-      //     label="Expiration Month"
-      //     disabled={isLoading}
-      //     register={register}
-      //     errors={errors}
-      //     required
-      //   />
-      //   <Input 
-      //     id="expYear"
-      //     label="Expiration Year"
-      //     disabled={isLoading}
-      //     register={register}
-      //     errors={errors}
-      //     required
-      //   />
-      //   <Input 
-      //     id="cvc"
-      //     label="CVC"
-      //     disabled={isLoading}
-      //     register={register}
-      //     errors={errors}
-      //     required
-      //   />
-      // </div>
     );
   
     const footerContent = (
       <div className="text-neutral-500 text-center font-light mt-4 p-2">
         <p>Ensure your payment details are correct before submitting.</p>
       </div>
-      // <div className="flex flex-col gap-4 mt-4">
-      //   <div className="text-neutral-500 text-center mt-4 font-light">
-      //     <div>Make sure your payment details are correct before submitting.</div>
-      //   </div>
-      // </div>
     );
   
     return (
@@ -154,9 +104,6 @@ const PaymentModal = () => {
         footer={footerContent}
       />
     );
-  };
-
-
-
+};
 
 export default PaymentModal;

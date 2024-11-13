@@ -3,6 +3,7 @@
 import React from 'react';
 import useRegisterModal from './hooks/useRegisterModal';
 import Button from './components/Button';
+import Image from 'next/image';  // Import Image component from Next.js
 
 export default function Home() {
   const registerModal = useRegisterModal();
@@ -22,11 +23,13 @@ export default function Home() {
 
       {/* Right Side: Image Section */}
       <div className="w-full md:w-1/2 p-4 flex justify-center">
-        <img
+        <Image
           src="/images/landing_page.png"
           alt="TrueFare Illustration"
           className="rounded-lg shadow-lg"
-          style={{ maxWidth: '100%', height: 'auto' }}
+          width={500}    // Specify a width for optimization
+          height={500}   // Specify a height for optimization
+          style={{ maxWidth: '100%', height: 'auto' }} // Optional, if you still want to adjust styling
         />
       </div>
     </div>

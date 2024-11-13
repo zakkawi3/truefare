@@ -1,9 +1,8 @@
 'use client';
 
 import axios from 'axios';
-import { AiFillGithub } from 'react-icons/ai';
 import { FcGoogle } from 'react-icons/fc';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import {
   FieldValues,
   SubmitHandler,
@@ -11,7 +10,6 @@ import {
 } from 'react-hook-form';
 
 import useRegisterModal from '@/app/hooks/useRegisterModal';
-import { error } from 'console';
 import Modal from './Modal';
 import Heading from '../Heading';
 import Input from '../inputs/Input';
@@ -21,7 +19,7 @@ import useLoginModal from '@/app/hooks/useLoginModal';
 import { signIn } from 'next-auth/react';
 
 const RegisterModal = () => {
-    const loginModal = useLoginModal();
+  const loginModal = useLoginModal();
   const registerModal = useRegisterModal();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -44,19 +42,19 @@ const RegisterModal = () => {
         .then(() => {
             registerModal.onClose();
         })
-        .catch((error) => {
+        .catch(() => {
             toast.error('Something went wrong');
         })
         .finally(() => {
             setIsLoading(false);
-        })
-  }
+        });
+  };
 
   const bodyContent = (
     <div className="flex flex-col gap-4">
         <Heading 
-            title = "Welcome to TrueFare"
-            subtitle = "Create an account!"
+            title="Welcome to TrueFare"
+            subtitle="Create an account!"
         />
         <Input 
             id="email"
@@ -92,7 +90,7 @@ const RegisterModal = () => {
             required
         />
     </div>
-  )
+  );
 
   const footerContent = (
     <div className='flex flex-col gap-4 mt-4'>
@@ -103,12 +101,6 @@ const RegisterModal = () => {
             icon={FcGoogle}
             onClick={() => signIn('google')}
         />
-        {/* <Button 
-            outline
-            label="Continue with GitHub"
-            icon={AiFillGithub}
-            onClick={() => {}}
-        /> */}
         <div
             className="
                 text-neutral-500
@@ -137,7 +129,7 @@ const RegisterModal = () => {
             </div>
         </div>
     </div>
-  )
+  );
 
   return (
     <Modal

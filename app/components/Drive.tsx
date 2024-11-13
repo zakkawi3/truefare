@@ -1,40 +1,38 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Container from './Container';
 import axios from 'axios';
-import { io } from 'socket.io-client';
+import { io, Socket } from 'socket.io-client';
 
 const Drive = () => {
   const [isDriving, setIsDriving] = useState(false);
   const [location, setLocation] = useState<{ lat: number | null; lng: number | null }>({ lat: null, lng: null });
-  const [socket, setSocket] = useState(null);
+  const socketRef = useRef<Socket | null>(null);
   const [showRideRequest, setShowRideRequest] = useState(false);
   const [riderData, setRiderData] = useState<{ riderID?: string; distance?: string; pickupLocation?: string; dropoffLocation?: string }>({});
-  // const userID = 29; //getDriverID
-  // const driverID = 29; //getDriverID
 
   useEffect(() => {
     const setupSocket = async () => {
       if (isDriving) {
         const newSocket = io('https://octopus-app-agn55.ondigitalocean.app/');
-        setSocket(newSocket);
-        
+        socketRef.current = newSocket;
+
         const driverEmail = localStorage.getItem('userEmail'); // Retrieve email from local storage
         if (!driverEmail) {
           console.error("User email not found in local storage");
           alert("Please log in again.");
           return;
         }
-        
+
         try {
           const idResponse = await axios.get(
             `https://octopus-app-agn55.ondigitalocean.app/users/${driverEmail}/id`
           );
           const driverID = idResponse.data.userID; // Extract the userID from the response
-  
+
           newSocket.emit('startDrive', { driverID });
-  
+
           newSocket.on('rideAcceptedNotification', (data) => {
             console.log('Ride accepted by rider, received data:', data);
             setRiderData({
@@ -51,63 +49,56 @@ const Drive = () => {
         }
       }
     };
-  
+
     setupSocket();
-  
+
     // Cleanup function to disconnect socket when component unmounts or `isDriving` changes
     return () => {
-      if (socket) {
-        socket.disconnect();
-        setSocket(null);
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
       }
     };
   }, [isDriving]);
-  
 
   const handleStartDrive = () => {
     setIsDriving(true);
     console.log('Driver started looking for a ride...');
-    const driverEmail = localStorage.getItem('userEmail'); // Retrieve email from local storage
+    const driverEmail = localStorage.getItem('userEmail');
     if (!driverEmail) {
       console.error("User email not found in local storage");
       alert("Please log in again.");
       return;
-    }  
+    }
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           const userLat = position.coords.latitude;
           const userLng = position.coords.longitude;
-  
+
           setLocation({ lat: userLat, lng: userLng });
           console.log('Driver location:', { userLat, userLng });
-  
+
           try {
-            // Step 1: Get the driver ID by email
             const idResponse = await axios.get(
               `https://octopus-app-agn55.ondigitalocean.app/users/${driverEmail}/id`
             );
-            const driverID = idResponse.data.userID; // Extract the userID from the response
-  
-            // Step 2: Activate the driver using the fetched driverID
-            const activateResponse = await axios.put(
+            const driverID = idResponse.data.userID;
+
+            await axios.put(
               `https://octopus-app-agn55.ondigitalocean.app/users/${driverID}/activate`,
               { headers: { 'Content-Type': 'application/json' } }
             );
-  
-            console.log('User activated successfully:', activateResponse.data);
-  
-            // Step 3: Update the driver's location using the fetched driverID
-            const updateResponse = await axios.put(
+
+            console.log('User activated successfully');
+
+            await axios.put(
               `https://octopus-app-agn55.ondigitalocean.app/drivers/${driverID}/location`,
-              {
-                userLat,
-                userLng,
-              },
+              { userLat, userLng },
               { headers: { 'Content-Type': 'application/json' } }
             );
-  
-            console.log('Driver location updated successfully:', updateResponse.data);
+
+            console.log('Driver location updated successfully');
           } catch (error) {
             console.error('Error activating or updating driver location:', error);
             alert('Failed to activate or update driver location on the server.');
@@ -122,41 +113,42 @@ const Drive = () => {
       alert('Geolocation is not supported by this browser.');
     }
   };
-  
-  
-
-  
 
   const handleStopDrive = async () => {
     setIsDriving(false);
     console.log('Driver stopped looking for a ride');
-    const activateResponse = await axios.put(
-      `https://octopus-app-agn55.ondigitalocean.app/users/${driverID}/deactivate`,
-      { headers: { 'Content-Type': 'application/json' } }
-    );
-
-    console.log('User activated successfully:', activateResponse.data);
-    if (socket) {
-      socket.disconnect();
-      setSocket(null);
+    const driverEmail = localStorage.getItem('userEmail');
+    if (driverEmail) {
+      const idResponse = await axios.get(
+        `https://octopus-app-agn55.ondigitalocean.app/users/${driverEmail}/id`
+      );
+      const driverID = idResponse.data.userID;
+      await axios.put(
+        `https://octopus-app-agn55.ondigitalocean.app/users/${driverID}/deactivate`,
+        { headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+      socketRef.current = null;
     }
     setShowRideRequest(false);
     setRiderData({});
   };
 
   const handleAcceptRide = () => {
-    if (socket) {
+    if (socketRef.current) {
       console.log('Driver accepted the ride request:', riderData);
-      socket.emit('driverAcceptRide', { riderID: riderData.riderID });
+      socketRef.current.emit('driverAcceptRide', { riderID: riderData.riderID });
       alert('You have accepted the ride.');
       setShowRideRequest(false);
     }
   };
 
   const handleRejectRide = () => {
-    if (socket) {
+    if (socketRef.current) {
       console.log('Driver rejected the ride request:', riderData);
-      socket.emit('driverRejectRide', { riderID: riderData.riderID });
+      socketRef.current.emit('driverRejectRide', { riderID: riderData.riderID });
       alert('You have rejected the ride.');
       setShowRideRequest(false);
       setRiderData({});
@@ -189,7 +181,7 @@ const Drive = () => {
             <p className="text-xl text-gray-700">Searching for Drive...</p>
           </div>
         )}
-        
+
         {showRideRequest && riderData && (
           <div className="mt-10 text-center">
             <h2 className="text-xl font-semibold">Ride Request</h2>
@@ -197,6 +189,20 @@ const Drive = () => {
             <p>Distance: {riderData.distance}</p>
             <p>Pickup Location: {riderData.pickupLocation}</p>
             <p>Dropoff Location: {riderData.dropoffLocation}</p>
+            <div className="mt-4">
+              <button
+                className="bg-green-500 text-white rounded-lg py-2 px-4 mr-2 hover:bg-green-600"
+                onClick={handleAcceptRide}
+              >
+                Accept Ride
+              </button>
+              <button
+                className="bg-red-500 text-white rounded-lg py-2 px-4 hover:bg-red-600"
+                onClick={handleRejectRide}
+              >
+                Reject Ride
+              </button>
+            </div>
           </div>
         )}
       </div>
