@@ -3,7 +3,6 @@
 import { io, Socket } from 'socket.io-client';
 import axios from 'axios';
 import { useState, useEffect, useCallback } from 'react';
-
 import useSearchingModal from '@/app/hooks/useSearchingModal';
 import Modal from './Modal';
 import toast from 'react-hot-toast';
@@ -25,7 +24,7 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }: Searchi
   const [isLoading, setIsLoading] = useState(false);
   const [socket, setSocket] = useState<Socket | null>(null);  // Define socket type
   const [driverData, setDriverData] = useState(null);
-  const [intervalId, setIntervalId] = useState(null);
+  const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);  // Type intervalId correctly
 
   const hardcodedLat = 33.7490; // Atlanta latitude
   const hardcodedLng = -84.3880; // Atlanta longitude
@@ -63,7 +62,6 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }: Searchi
     }
   }, [userCoords, intervalId, hardcodedLng]);  // Added hardcodedLng to dependencies
 
-
   useEffect(() => {
     if (searchingModal.isOpen) {
       console.log("Opening WebSocket connection...");
@@ -88,7 +86,7 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }: Searchi
     if (searchingModal.isOpen && !intervalId) {
       console.log("Starting polling interval...");
       const id = setInterval(pollClosestDriver, 5000); 
-      setIntervalId(id);
+      setIntervalId(id as NodeJS.Timeout);  // Type cast to NodeJS.Timeout
     }
 
     return () => {
