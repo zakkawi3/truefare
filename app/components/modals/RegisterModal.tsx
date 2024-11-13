@@ -34,7 +34,6 @@ const RegisterModal = () => {
         name: '',
         email: '',
         password: '',
-        cardNumber: ''
     }
   });
 

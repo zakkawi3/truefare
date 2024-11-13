@@ -48,18 +48,21 @@ const LoginModal = () => {
     })
     .then((callback) => {
         setIsLoading(false);
-
+  
         if(callback?.ok){
             toast.success('Logged in');
+            // Save the email to local storage after a successful login
+            localStorage.setItem('userEmail', data.email);
             router.refresh();
             loginModal.onClose();
         }
-
+  
         if(callback?.error){
             toast.error(callback.error);
         }
     })
   }
+  
 
   const bodyContent = (
     <div className="flex flex-col gap-4">

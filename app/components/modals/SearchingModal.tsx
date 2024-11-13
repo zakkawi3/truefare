@@ -8,7 +8,7 @@ import useSearchingModal from '@/app/hooks/useSearchingModal';
 import Modal from './Modal';
 import toast from 'react-hot-toast';
 
-const SearchingModal = () => {  // Removed userCoords prop
+const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
   const searchingModal = useSearchingModal();
   const [isLoading, setIsLoading] = useState(false);
   const [socket, setSocket] = useState(null);
@@ -23,27 +23,29 @@ const SearchingModal = () => {  // Removed userCoords prop
     defaultValues: {
       distance: '',
       pay: '',
-      userLat: hardcodedLat,
-      userLng: hardcodedLng
+      userLat: userCoords?.lat || '',
+      userLng: userCoords?.lng || ''
     }
   });
 
-  // Callback for polling
   const pollClosestDriver = useCallback(async () => {
-    if (driverData) return;  // Stop polling if driverData is already set
-
-    console.log('Polling https://octopus-app-agn55.ondigitalocean.app/riders/closestDriver...');
+    if (!userCoords?.lat || !userCoords?.lng) {
+      console.error("User coordinates are missing at pollClosestDriver.");
+      return;
+    }
+  
+    console.log('Polling https://octopus-app-agn55.ondigitalocean.app/riders/closestDriver', userCoords);
     setIsLoading(true);
     try {
-      const response = await axios.get('https://octopus-app-agn55.ondigitalocean.app/riders/closestDriver', {
+      const response = await axios.get('https://octopus-app-agn55.ondigitalocean.app/riders/closestDriver', { 
         params: {
           userLat: hardcodedLat,
           userLng: hardcodedLng,
         },
       });
-
+  
       console.log('Received response from /riders/closestDriver:', response.data);
-      setDriverData(response.data);
+      setDriverData(response.data); 
       toast.success('Searching for closest driver...', { id: 'searching-toast' });
 
       // Stop polling after finding a driver
@@ -57,9 +59,9 @@ const SearchingModal = () => {  // Removed userCoords prop
     } finally {
       setIsLoading(false);
     }
-  }, [driverData, intervalId]);
+  }, [userCoords]);
+  
 
-  // Initialize WebSocket connection when the modal opens
   useEffect(() => {
     if (searchingModal.isOpen) {
       console.log("Opening WebSocket connection...");
@@ -70,12 +72,6 @@ const SearchingModal = () => {  // Removed userCoords prop
         console.log('Driver assigned:', data);
         setDriverData(data);
         toast.success('Driver found! Ride assigned.', { id: 'assigned-toast' });
-        searchingModal.onClose();
-
-        if (intervalId) {
-          clearInterval(intervalId);
-          setIntervalId(null);
-        }
       });
 
       return () => {
@@ -86,11 +82,10 @@ const SearchingModal = () => {  // Removed userCoords prop
     }
   }, [searchingModal.isOpen, intervalId]);
 
-  // Set up polling when modal is open and start the interval
   useEffect(() => {
     if (searchingModal.isOpen && !intervalId) {
       console.log("Starting polling interval...");
-      const id = setInterval(pollClosestDriver, 5000);
+      const id = setInterval(pollClosestDriver, 5000); 
       setIntervalId(id);
     }
 
@@ -103,17 +98,85 @@ const SearchingModal = () => {  // Removed userCoords prop
     };
   }, [searchingModal.isOpen, intervalId, pollClosestDriver]);
 
+  const handleAcceptRide = () => {
+    if (socket && driverData) {
+      const {
+        driverID,
+        riderID = "sampleRiderID", 
+        distance = driverData.distance || "Unknown distance"
+      } = driverData;
+
+      console.log("Sending ride acceptance with details:", {
+        driverID,
+        riderID,
+        distance,
+        pickupLocation,
+        dropoffLocation,
+      });
+
+      socket.emit('acceptRide', {
+        driverID,
+        riderID,
+        distance,
+        pickupLocation,
+        dropoffLocation,
+      });
+
+      toast.success("Ride accepted!");
+      searchingModal.onClose();
+    } else {
+      console.error("Driver or Socket information is missing.");
+    }
+  };
+
+  const handleDeclineRide = () => {
+    toast.error("Ride declined!");
+    setDriverData(null);
+  };
+
   const bodyContent = (
-    <div className="flex flex-col gap-4">
-      <div id="distance" className="text-lg">
-        <label className="font-medium">Searching for a driver...</label>
-        {driverData ? (
-          <p>Driver found: {driverData.driverID}, Distance: {driverData.distance}</p>
-        ) : (
-          <p>Searching...</p>
-        )}
-      </div>
+    <div className="flex flex-col gap-6 p-4 text-center">
+      <h2 className="text-xl font-semibold text-gray-800">Searching for a driver...</h2>
+      {driverData ? (
+        <div className="space-y-4">
+          <p className="text-lg font-medium text-green-700">Driver found!</p>
+          <p className="text-gray-600">
+            <span className="font-semibold">Driver ID:</span> {driverData.driverID}
+          </p>
+          <p className="text-gray-600">
+            <span className="font-semibold">Distance:</span> {driverData.distance}
+          </p>
+        </div>
+      ) : (
+        <p className="text-gray-500">We’re currently looking for available drivers...</p>
+      )}
     </div>
+    // <div className="flex flex-col gap-4">
+    //   <div id="distance" className="text-lg">
+    //     <label className="font-medium">Searching for a driver...</label>
+    //     {driverData ? (
+    //       <div>
+    //         <p>Driver found: {driverData.driverID}, Distance: {driverData.distance}</p>
+    //         <div className="mt-4 flex gap-4">
+    //           <button
+    //             className="bg-blue-500 text-white rounded-lg py-2 px-4 hover:bg-blue-600"
+    //             onClick={handleAcceptRide}
+    //           >
+    //             Accept
+    //           </button>
+    //           <button
+    //             className="bg-red-500 text-white rounded-lg py-2 px-4 hover:bg-red-600"
+    //             onClick={handleDeclineRide}
+    //           >
+    //             Reject
+    //           </button>
+    //         </div>
+    //       </div>
+    //     ) : (
+    //       <p></p>
+    //     )}
+    //   </div>
+    // </div>
   );
 
   return (
@@ -122,12 +185,10 @@ const SearchingModal = () => {  // Removed userCoords prop
       isOpen={searchingModal.isOpen}
       title="Finding Your Driver"
       actionLabel="Cancel Ride"
-      onClose={() => {
-        console.log('Modal closed by user');
-        searchingModal.onClose();
-      }}
+      onClose={() => searchingModal.onClose()}
+      onSubmit={() => searchingModal.onClose()}
       body={bodyContent}
-      actionClassName="bg-blue-500 text-white hover:bg-blue-600 border-blue-500"
+      actionClassName="bg-red-500 text-white hover:bg-red-600 border-red-500 font-semibold py-2 px-4 rounded-lg transition-colors"
     />
   );
 };

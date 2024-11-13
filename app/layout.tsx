@@ -10,6 +10,8 @@ import RideModal from "./components/modals/RideModal";
 import RidePriceModal from "./components/modals/RidePriceModal";
 import SearchingModal from "./components/modals/SearchingModal";
 import DriverAssignmentModal from "./components/modals/DriverAssignmentModal";
+import PaymentModal from "./components/modals/PaymentModal";
+import { FieldValues } from "react-hook-form";
 
 const font = Nunito({
   subsets: ["latin"],
@@ -34,7 +36,8 @@ export default function RootLayout({
           <LoginModal />
           <RideModal />
           <RidePriceModal />
-          <SearchingModal />
+          <SearchingModal userCoords={undefined} pickupLocation={undefined} dropoffLocation={undefined} />
+          <PaymentModal />
           <DriverAssignmentModal />
           <Navbar />
           <div className="pt-16"> {/* Adjust pt-16 based on your navbar height */}
