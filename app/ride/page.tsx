@@ -60,6 +60,7 @@ export default function Ride() {
         travelMode: google.maps.TravelMode.DRIVING,
       });
 
+      // Check if routes and legs exist before accessing them
       if (results?.routes?.[0]?.legs?.[0]) {
         setDirectionsResponse(results);
 
