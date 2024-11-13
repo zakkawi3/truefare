@@ -3,8 +3,6 @@ import GithubProvider from "next-auth/providers/github"
 import GoogleProvider from "next-auth/providers/google"
 import CredentialsProvider from "next-auth/providers/credentials"
 
-var out_email = null;
-
 export const authOptions: AuthOptions = {
     providers: [
         GithubProvider({
@@ -27,7 +25,6 @@ export const authOptions: AuthOptions = {
                 }
 
                 // Call external API to verify user credentials
-                out_email = credentials.email;
                 const response = await fetch('https://octopus-app-agn55.ondigitalocean.app/users/verify', {
                     method: 'POST',
                     headers: {
@@ -47,7 +44,6 @@ export const authOptions: AuthOptions = {
 
                 // Check for user verification
                 if (data.message === 'User verified' && data.user) {
-                    //window.currentUserEmail = out_email;
                     return data.user; // Return the user object if verified
                 } else {
                     throw new Error('Invalid credentials');

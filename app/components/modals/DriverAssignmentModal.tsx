@@ -24,7 +24,7 @@ const DriverAssignment = () => {
   });
 
   // Update the onSubmit handler to use DriverAssignmentFormData
-  const onSubmit: SubmitHandler<DriverAssignmentFormData> = (data) => {
+  const onSubmit: SubmitHandler<DriverAssignmentFormData> = () => {
     setIsLoading(true);
 
     // Close RidePriceModal and open SearchingModal
