@@ -51,7 +51,7 @@ const RegisterModal = () => {
   };
 
   const bodyContent = (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 px-4 sm:px-6 lg:px-8 w-full max-w-md">
         <Heading 
             title="Welcome to TrueFare"
             subtitle="Create an account!"
@@ -73,8 +73,8 @@ const RegisterModal = () => {
             required
         />
         <Input 
-            id="cardNumber"
-            label="Card Number"
+            id="phoneNumber"
+            label="Phone Number"
             disabled={isLoading}
             register={register}
             errors={errors}
@@ -93,7 +93,7 @@ const RegisterModal = () => {
   );
 
   const footerContent = (
-    <div className='flex flex-col gap-4 mt-4'>
+    <div className='max-w-full sm:max-w-lg mx-auto p-4 sm:p-6 lg:p-8 overflow-y-auto max-h-screen'>
         <hr />
         <Button 
             outline
