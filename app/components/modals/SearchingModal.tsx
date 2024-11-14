@@ -3,7 +3,7 @@ import { io } from 'socket.io-client';
 import axios from 'axios';
 import { useState, useEffect, useCallback } from 'react';
 import { FieldValues, useForm } from 'react-hook-form';
-
+import Image from 'next/image'; // Import Next.js Image component
 import useSearchingModal from '@/app/hooks/useSearchingModal';
 import Modal from './Modal';
 import toast from 'react-hot-toast';
@@ -142,6 +142,20 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
   const bodyContent = (
     <div className="flex flex-col gap-6 p-4 text-center">
       <h2 className="text-xl font-semibold text-gray-800">Searching for a driver...</h2>
+      
+      {/* Car Silhouette Image */}
+      <div className="flex justify-center">
+        <div className="rounded-full border-4 border-black p-1"> {/* Circular border styling */}
+          <Image 
+            src="/images/car.png" 
+            alt="Car silhouette" 
+            width={120} 
+            height={120} 
+            className="rounded-full" // Rounded image for circular edges
+          />
+        </div>
+      </div>
+
       {driverData ? (
         <div className="space-y-4">
           <p className="text-lg font-medium text-green-700">Driver found!</p>
@@ -149,7 +163,7 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
             <span className="font-semibold">Driver ID:</span> {driverData.driverID}
           </p>
           <p className="text-gray-600">
-            <span className="font-semibold">Distance:</span> {driverData.distance}
+            <span className="font-semibold">Distance:</span> {driverData.distance} km
           </p>
         </div>
       ) : (
