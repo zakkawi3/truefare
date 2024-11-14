@@ -35,7 +35,7 @@ const UserMenu = () => {
     return (
         <div className="relative">
             <div className="flex flex-row items-center gap-3">
-                {/* Conditionally render "Ride" and "Drive" if the user is logged in */}
+                {/* Conditionally render "Ride", "Drive", and "Account" if the user is logged in */}
                 {!isMobileView && (
                     <>
                         {session?.user && (
@@ -52,6 +52,12 @@ const UserMenu = () => {
                                 >
                                     Drive
                                 </div>
+                                <div
+                                    onClick={() => handleNavigate('/account')}
+                                    className="text-sm font-semibold py-3 px-4 rounded-full hover:bg-neutral-100 transition cursor-pointer"
+                                >
+                                    Account
+                                </div>
                             </>
                         )}
                         <div
@@ -65,12 +71,6 @@ const UserMenu = () => {
                             className="text-sm font-semibold py-3 px-4 rounded-full hover:bg-neutral-100 transition cursor-pointer"
                         >
                             Contact Us
-                        </div>
-                        <div
-                            onClick={() => handleNavigate('/account')}
-                            className="text-sm font-semibold py-3 px-4 rounded-full hover:bg-neutral-100 transition cursor-pointer"
-                        >
-                            Account
                         </div>
                     </>
                 )}
@@ -95,11 +95,11 @@ const UserMenu = () => {
                                     <>
                                         <MenuItem onClick={() => handleNavigate('/ride')} label="Ride" />
                                         <MenuItem onClick={() => handleNavigate('/drive')} label="Drive" />
+                                        <MenuItem onClick={() => handleNavigate('/account')} label="Account" />
                                     </>
                                 )}
                                 <MenuItem onClick={() => handleNavigate('/about')} label="About" />
                                 <MenuItem onClick={() => handleNavigate('/contact')} label="Contact Us" />
-                                <MenuItem onClick={() => handleNavigate('/account')} label="Account" />
                             </>
                         )}
                         {/* Login, Sign Up, and Logout options based on session */}
