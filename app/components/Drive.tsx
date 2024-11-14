@@ -11,8 +11,7 @@ const Drive = () => {
   const [socket, setSocket] = useState(null);
   const [showRideRequest, setShowRideRequest] = useState(false);
   const [riderData, setRiderData] = useState<{ riderID?: string; distance?: string; pickupLocation?: string; dropoffLocation?: string }>({});
-  // const userID = 29; //getDriverID
-  // const driverID = 29; //getDriverID
+  const [driverID, setDriverID] = useState<number | null>(null); // New state for driverID
 
   useEffect(() => {
     const setupSocket = async () => {
@@ -31,10 +30,11 @@ const Drive = () => {
           const idResponse = await axios.get(
             `https://octopus-app-agn55.ondigitalocean.app/users/${driverEmail}/id`
           );
-          const driverID = idResponse.data.userID; // Extract the userID from the response
-  
-          newSocket.emit('startDrive', { driverID });
-  
+          const fetchedDriverID = idResponse.data.userID; // Extract the userID from the response
+          setDriverID(fetchedDriverID); // Store driverID in state
+
+          newSocket.emit('startDrive', { driverID: fetchedDriverID });
+
           newSocket.on('rideAcceptedNotification', (data) => {
             console.log('Ride accepted by rider, received data:', data);
             setRiderData({
@@ -51,9 +51,9 @@ const Drive = () => {
         }
       }
     };
-  
+
     setupSocket();
-  
+
     // Cleanup function to disconnect socket when component unmounts or `isDriving` changes
     return () => {
       if (socket) {
@@ -62,7 +62,6 @@ const Drive = () => {
       }
     };
   }, [isDriving]);
-  
 
   const handleStartDrive = () => {
     setIsDriving(true);
@@ -78,35 +77,36 @@ const Drive = () => {
         async (position) => {
           const userLat = position.coords.latitude;
           const userLng = position.coords.longitude;
-  
+
           setLocation({ lat: userLat, lng: userLng });
           console.log('Driver location:', { userLat, userLng });
-  
+
           try {
             // Step 1: Get the driver ID by email
             const idResponse = await axios.get(
               `https://octopus-app-agn55.ondigitalocean.app/users/${driverEmail}/id`
             );
-            const driverID = idResponse.data.userID; // Extract the userID from the response
-  
+            const fetchedDriverID = idResponse.data.userID; // Extract the userID from the response
+            setDriverID(fetchedDriverID); // Store driverID in state
+
             // Step 2: Activate the driver using the fetched driverID
             const activateResponse = await axios.put(
-              `https://octopus-app-agn55.ondigitalocean.app/users/${driverID}/activate`,
+              `https://octopus-app-agn55.ondigitalocean.app/users/${fetchedDriverID}/activate`,
               { headers: { 'Content-Type': 'application/json' } }
             );
-  
+
             console.log('User activated successfully:', activateResponse.data);
-  
+
             // Step 3: Update the driver's location using the fetched driverID
             const updateResponse = await axios.put(
-              `https://octopus-app-agn55.ondigitalocean.app/drivers/${driverID}/location`,
+              `https://octopus-app-agn55.ondigitalocean.app/drivers/${fetchedDriverID}/location`,
               {
                 userLat,
                 userLng,
               },
               { headers: { 'Content-Type': 'application/json' } }
             );
-  
+
             console.log('Driver location updated successfully:', updateResponse.data);
           } catch (error) {
             console.error('Error activating or updating driver location:', error);
@@ -122,20 +122,22 @@ const Drive = () => {
       alert('Geolocation is not supported by this browser.');
     }
   };
-  
-  
-
-  
 
   const handleStopDrive = async () => {
     setIsDriving(false);
     console.log('Driver stopped looking for a ride');
-    const activateResponse = await axios.put(
-      `https://octopus-app-agn55.ondigitalocean.app/users/${driverID}/deactivate`,
-      { headers: { 'Content-Type': 'application/json' } }
-    );
 
-    console.log('User activated successfully:', activateResponse.data);
+    if (driverID !== null) {
+      const activateResponse = await axios.put(
+        `https://octopus-app-agn55.ondigitalocean.app/users/${driverID}/deactivate`,
+        { headers: { 'Content-Type': 'application/json' } }
+      );
+
+      console.log('User deactivated successfully:', activateResponse.data);
+    } else {
+      console.error("driverID is not defined.");
+    }
+
     if (socket) {
       socket.disconnect();
       setSocket(null);
