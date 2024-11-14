@@ -66,6 +66,12 @@ const UserMenu = () => {
                         >
                             Contact Us
                         </div>
+                        <div
+                            onClick={() => handleNavigate('/account')}
+                            className="text-sm font-semibold py-3 px-4 rounded-full hover:bg-neutral-100 transition cursor-pointer"
+                        >
+                            Account
+                        </div>
                     </>
                 )}
 
@@ -89,6 +95,7 @@ const UserMenu = () => {
                                 <MenuItem onClick={() => handleNavigate('/drive')} label="Drive" />
                                 <MenuItem onClick={() => handleNavigate('/about')} label="About" />
                                 <MenuItem onClick={() => handleNavigate('/contact')} label="Contact Us" />
+                                <MenuItem onClick={() => handleNavigate('/account')} label="Account" />
                             </>
                         )}
                         {/* Login and Sign Up (always available in dropdown) */}
