@@ -57,89 +57,14 @@ const PaymentModal = () => {
           subtitle="Enter your payment information"
         />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-md">
-          <Input
-            id="cardNumber"
-            label="Card Number"
-            disabled={isLoading}
-            register={register}
-            errors={errors}
-            required
-          />
-          <Input
-            id="expMonth"
-            label="Exp Month"
-            disabled={isLoading}
-            register={register}
-            errors={errors}
-            required
-          />
-          <Input
-            id="expYear"
-            label="Exp Year"
-            disabled={isLoading}
-            register={register}
-            errors={errors}
-            required
-          />
-          <Input
-            id="cvc"
-            label="CVC"
-            disabled={isLoading}
-            register={register}
-            errors={errors}
-            required
-          />
         </div>
       </div>
-      // <div className="flex flex-col gap-6 items-center sm:items-stretch p-4">
-      //   <Heading 
-      //     title="Enter Payment Details"
-      //     subtitle="Complete your payment information"
-      //   />
-      //   <Input 
-      //     id="cardNumber"
-      //     label="Card Number"
-      //     disabled={isLoading}
-      //     register={register}
-      //     errors={errors}
-      //     required
-      //   />
-      //   <Input 
-      //     id="expMonth"
-      //     label="Expiration Month"
-      //     disabled={isLoading}
-      //     register={register}
-      //     errors={errors}
-      //     required
-      //   />
-      //   <Input 
-      //     id="expYear"
-      //     label="Expiration Year"
-      //     disabled={isLoading}
-      //     register={register}
-      //     errors={errors}
-      //     required
-      //   />
-      //   <Input 
-      //     id="cvc"
-      //     label="CVC"
-      //     disabled={isLoading}
-      //     register={register}
-      //     errors={errors}
-      //     required
-      //   />
-      // </div>
     );
   
     const footerContent = (
       <div className="text-neutral-500 text-center font-light mt-4 p-2">
         <p>Ensure your payment details are correct before submitting.</p>
       </div>
-      // <div className="flex flex-col gap-4 mt-4">
-      //   <div className="text-neutral-500 text-center mt-4 font-light">
-      //     <div>Make sure your payment details are correct before submitting.</div>
-      //   </div>
-      // </div>
     );
   
     return (

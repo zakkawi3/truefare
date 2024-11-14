@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation'; // Import the hook at the top of your component
 import { FieldValues, SubmitHandler, useForm } from 'react-hook-form';
 import useRidePriceModal from '@/app/hooks/useRidePriceModal';
 import useSearchingModal from '@/app/hooks/useSearchingModal'; // Import SearchingModal hook
@@ -15,6 +16,9 @@ const RidePriceModal = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { isOpen, distance, duration, cost } = ridePriceModal;
 
+  // Move useRouter outside of the submit handler to avoid invalid hook call error
+  const router = useRouter();
+
   const {
     register,
     handleSubmit,
@@ -26,14 +30,20 @@ const RidePriceModal = () => {
     },
   });
 
+  // onSubmit handler remains the same, but now we use router that was defined outside
   const onSubmit: SubmitHandler<FieldValues> = (data) => {
     setIsLoading(true);
 
-    // Close RidePriceModal and open SearchingModal
+    // Close RidePriceModal and potentially open SearchingModal
     ridePriceModal.onClose();
-    paymentModal.onOpen();
+
+    // Now the router is available here and can be used safely
+    router.push('/checkout');  // Navigate to CheckoutPage
+
+    // Optionally, you could open the SearchingModal if you want to display a loading state
     //searchingModal.onOpen();
-    
+
+    // Finish loading state after navigating
     setIsLoading(false);
   };
 

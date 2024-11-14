@@ -1,38 +1,40 @@
 'use client';
-import { io } from 'socket.io-client';
+
+import { io, Socket } from 'socket.io-client';
 import axios from 'axios';
 import { useState, useEffect, useCallback } from 'react';
-import { FieldValues, useForm } from 'react-hook-form';
-
 import useSearchingModal from '@/app/hooks/useSearchingModal';
 import Modal from './Modal';
 import toast from 'react-hot-toast';
 
-const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
+// Type definitions for props
+type UserCoords = {
+  lat: number;
+  lng: number;
+};
+
+interface SearchingModalProps {
+  userCoords: UserCoords;
+  pickupLocation: string;
+  dropoffLocation: string;
+}
+
+const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }: SearchingModalProps) => {
   const searchingModal = useSearchingModal();
   const [isLoading, setIsLoading] = useState(false);
-  const [socket, setSocket] = useState(null);
+  const [socket, setSocket] = useState<Socket | null>(null);  // Define socket type
   const [driverData, setDriverData] = useState(null);
-  const [intervalId, setIntervalId] = useState(null);
+  const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);  // Type intervalId correctly
 
   const hardcodedLat = 33.7490; // Atlanta latitude
   const hardcodedLng = -84.3880; // Atlanta longitude
-  
-  const { register, formState: { errors } } = useForm<FieldValues>({
-    defaultValues: {
-      distance: '',
-      pay: '',
-      userLat: userCoords?.lat || '',
-      userLng: userCoords?.lng || ''
-    }
-  });
 
   const pollClosestDriver = useCallback(async () => {
     if (!userCoords?.lat || !userCoords?.lng) {
       console.error("User coordinates are missing at pollClosestDriver.");
       return;
     }
-  
+
     console.log('Polling https://octopus-app-agn55.ondigitalocean.app/riders/closestDriver', userCoords);
     setIsLoading(true);
     try {
@@ -42,10 +44,11 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
           userLng: hardcodedLng,
         },
       });
-  
+
       console.log('Received response from /riders/closestDriver:', response.data);
       setDriverData(response.data); 
       toast.success('Searching for closest driver...', { id: 'searching-toast' });
+
       // Stop polling after finding a driver
       if (intervalId) {
         clearInterval(intervalId);
@@ -57,8 +60,7 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [userCoords]);
-  
+  }, [userCoords, intervalId, hardcodedLng]);  // Added hardcodedLng to dependencies
 
   useEffect(() => {
     if (searchingModal.isOpen) {
@@ -84,7 +86,7 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
     if (searchingModal.isOpen && !intervalId) {
       console.log("Starting polling interval...");
       const id = setInterval(pollClosestDriver, 5000); 
-      setIntervalId(id);
+      setIntervalId(id as NodeJS.Timeout);  // Type cast to NodeJS.Timeout
     }
 
     return () => {
@@ -95,13 +97,6 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
       }
     };
   }, [searchingModal.isOpen, intervalId, pollClosestDriver]);
-
-  // New useEffect to trigger handleAcceptRide only when driverData is set
-  useEffect(() => {
-    if (driverData) {
-      handleAcceptRide();
-    }
-  }, [driverData]);
 
   const handleAcceptRide = () => {
     if (socket && driverData) {
@@ -151,6 +146,20 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
           <p className="text-gray-600">
             <span className="font-semibold">Distance:</span> {driverData.distance}
           </p>
+          <div className="mt-4 flex gap-4">
+            <button
+              className="bg-blue-500 text-white rounded-lg py-2 px-4 hover:bg-blue-600"
+              onClick={handleAcceptRide}
+            >
+              Accept
+            </button>
+            <button
+              className="bg-red-500 text-white rounded-lg py-2 px-4 hover:bg-red-600"
+              onClick={handleDeclineRide}
+            >
+              Decline
+            </button>
+          </div>
         </div>
       ) : (
         <p className="text-gray-500">We’re currently looking for available drivers...</p>
