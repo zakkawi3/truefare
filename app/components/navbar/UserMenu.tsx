@@ -1,16 +1,19 @@
 'use client';
+
 import { useState, useCallback, useEffect } from 'react';
 import { AiOutlineMenu } from 'react-icons/ai';
 import { useRouter } from 'next/navigation';
 import MenuItem from './MenuItem';
 import useRegisterModal from '@/app/hooks/useRegisterModal';
 import useLoginModal from '@/app/hooks/useLoginModal';
+import { useSession, signOut } from 'next-auth/react';
 
 const UserMenu = () => {
     const registerModal = useRegisterModal();
     const loginModal = useLoginModal();
+    const { data: session } = useSession();
     const [isOpen, setIsOpen] = useState(false);
-    const [isMobileView, setIsMobileView] = useState(false); // Track screen size
+    const [isMobileView, setIsMobileView] = useState(false);
     const router = useRouter();
 
     const toggleOpen = useCallback(() => {
@@ -19,41 +22,38 @@ const UserMenu = () => {
 
     const handleNavigate = (path: string) => {
         router.push(path);
-        setIsOpen(false); // Close menu after navigating
+        setIsOpen(false);
     };
 
     useEffect(() => {
-        // Function to check if the screen is below medium size (768px)
         const handleResize = () => setIsMobileView(window.innerWidth < 768);
-
-        // Initial check
         handleResize();
-
-        // Add resize event listener
         window.addEventListener('resize', handleResize);
-
-        // Clean up the event listener
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
     return (
         <div className="relative">
             <div className="flex flex-row items-center gap-3">
-                {/* Render menu items in navbar only if not in mobile view */}
+                {/* Conditionally render "Ride" and "Drive" if the user is logged in */}
                 {!isMobileView && (
                     <>
-                        <div
-                            onClick={() => handleNavigate('/ride')}
-                            className="text-sm font-semibold py-3 px-4 rounded-full hover:bg-neutral-100 transition cursor-pointer"
-                        >
-                            Ride
-                        </div>
-                        <div
-                            onClick={() => handleNavigate('/drive')}
-                            className="text-sm font-semibold py-3 px-4 rounded-full hover:bg-neutral-100 transition cursor-pointer"
-                        >
-                            Drive
-                        </div>
+                        {session?.user && (
+                            <>
+                                <div
+                                    onClick={() => handleNavigate('/ride')}
+                                    className="text-sm font-semibold py-3 px-4 rounded-full hover:bg-neutral-100 transition cursor-pointer"
+                                >
+                                    Ride
+                                </div>
+                                <div
+                                    onClick={() => handleNavigate('/drive')}
+                                    className="text-sm font-semibold py-3 px-4 rounded-full hover:bg-neutral-100 transition cursor-pointer"
+                                >
+                                    Drive
+                                </div>
+                            </>
+                        )}
                         <div
                             onClick={() => handleNavigate('/about')}
                             className="text-sm font-semibold py-3 px-4 rounded-full hover:bg-neutral-100 transition cursor-pointer"
@@ -91,16 +91,29 @@ const UserMenu = () => {
                         {/* Render items in dropdown only if in mobile view */}
                         {isMobileView && (
                             <>
-                                <MenuItem onClick={() => handleNavigate('/ride')} label="Ride" />
-                                <MenuItem onClick={() => handleNavigate('/drive')} label="Drive" />
+                                {session?.user && (
+                                    <>
+                                        <MenuItem onClick={() => handleNavigate('/ride')} label="Ride" />
+                                        <MenuItem onClick={() => handleNavigate('/drive')} label="Drive" />
+                                    </>
+                                )}
                                 <MenuItem onClick={() => handleNavigate('/about')} label="About" />
                                 <MenuItem onClick={() => handleNavigate('/contact')} label="Contact Us" />
                                 <MenuItem onClick={() => handleNavigate('/account')} label="Account" />
                             </>
                         )}
-                        {/* Login and Sign Up (always available in dropdown) */}
-                        <MenuItem onClick={loginModal.onOpen} label="Login" />
-                        <MenuItem onClick={registerModal.onOpen} label="Sign Up" />
+                        {/* Login, Sign Up, and Logout options based on session */}
+                        {session?.user ? (
+                            <>
+                                <MenuItem onClick={() => handleNavigate('/profile')} label={`Welcome, ${session.user.name || session.user.email}`} />
+                                <MenuItem onClick={() => signOut()} label="Logout" />
+                            </>
+                        ) : (
+                            <>
+                                <MenuItem onClick={loginModal.onOpen} label="Login" />
+                                <MenuItem onClick={registerModal.onOpen} label="Sign Up" />
+                            </>
+                        )}
                     </div>
                 </div>
             )}

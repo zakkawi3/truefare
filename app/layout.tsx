@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import {Nunito} from "next/font/google"
+import { Nunito } from "next/font/google";
 import Navbar from "./components/navbar/Navbar";
 import ClientOnly from "./components/ClientOnly";
 import RegisterModal from "./components/modals/RegisterModal";
@@ -11,11 +11,11 @@ import RidePriceModal from "./components/modals/RidePriceModal";
 import SearchingModal from "./components/modals/SearchingModal";
 import DriverAssignmentModal from "./components/modals/DriverAssignmentModal";
 import PaymentModal from "./components/modals/PaymentModal";
-import { FieldValues } from "react-hook-form";
+import SessionProviderWrapper from "./components/SessionProviderWrapper";
 
 const font = Nunito({
   subsets: ["latin"],
-})
+});
 
 export const metadata: Metadata = {
   title: "Truefare",
@@ -28,24 +28,25 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en"> 
+    <html lang="en">
       <body className={font.className}>
-        <ClientOnly>
-          <ToasterProvider />
-          <RegisterModal />
-          <LoginModal />
-          <RideModal />
-          <RidePriceModal />
-          <SearchingModal userCoords={undefined} pickupLocation={undefined} dropoffLocation={undefined} />
-          <PaymentModal />
-          <DriverAssignmentModal />
-          <Navbar />
-          <div className="pt-16"> {/* Adjust pt-16 based on your navbar height */}
-          {children}
-        </div>
-        </ClientOnly>
+        <SessionProviderWrapper> {/* Wrap the necessary parts in SessionProvider */}
+          <ClientOnly>
+            <ToasterProvider />
+            <RegisterModal />
+            <LoginModal />
+            <RideModal />
+            <RidePriceModal />
+            <SearchingModal userCoords={undefined} pickupLocation={undefined} dropoffLocation={undefined} />
+            <PaymentModal />
+            <DriverAssignmentModal />
+            <Navbar />
+            <div className="pt-16"> {/* Adjust pt-16 based on your navbar height */}
+              {children}
+            </div>
+          </ClientOnly>
+        </SessionProviderWrapper>
       </body>
-
     </html>
   );
 }
