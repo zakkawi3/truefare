@@ -16,6 +16,7 @@ interface ModalProps {
     secondaryAction?: () => void;
     secondaryActionLabel?: string;
     actionClassName?: string; 
+    children?: React.ReactNode; 
   }
   
   const Modal: React.FC<ModalProps> = ({
@@ -29,7 +30,8 @@ interface ModalProps {
     disabled,
     secondaryAction,
     secondaryActionLabel,
-    actionClassName
+    actionClassName,
+    children
   }) => {
     const [showModal, setShowModal] = useState(isOpen);
 
@@ -157,6 +159,7 @@ interface ModalProps {
                     </div>
                     <div className="relative p-6 flex-auto">
                         {body}
+                        {children}
                     </div>
                     <div className="flex flex-col gap-2 p-6">
                         <div

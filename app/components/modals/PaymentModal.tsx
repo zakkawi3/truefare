@@ -1,87 +1,125 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
+import { loadStripe, Stripe } from '@stripe/stripe-js';
 import {
-  FieldValues,
-  SubmitHandler,
-  useForm
-} from 'react-hook-form';
-
+  EmbeddedCheckoutProvider,
+  EmbeddedCheckout,
+} from '@stripe/react-stripe-js';
+import { toast } from 'react-hot-toast';
 import usePaymentModal from '@/app/hooks/usePaymentModal';
 import Modal from './Modal';
 import Heading from '../Heading';
-import Input from '../inputs/Input';
-import toast from 'react-hot-toast';
-import SearchingModal from './SearchingModal';
 import useSearchingModal from '@/app/hooks/useSearchingModal';
 
-const PaymentModal = () => {
-    const paymentModal = usePaymentModal();
-    const searchingModal = useSearchingModal();
-    const [isLoading, setIsLoading] = useState(false);
-  
-    const {
-      register,
-      handleSubmit,
-      formState: { errors },
-    } = useForm<FieldValues>({
-      defaultValues: {
-        cardNumber: '',
-        expMonth: '',
-        expYear: '',
-        cvc: ''
-      }
-    });
-  
-    const onSubmit: SubmitHandler<FieldValues> = (data) => {
-      setIsLoading(true);
-  
-      //Can use this if we want to create an aritifical timeout for processing
-      // Simulate API call or handle payment processing here
-    //   setTimeout(() => {
-    //     setIsLoading(false);
-    //     toast.success('Payment Submitted');
-    //     paymentModal.onClose();
-    //   }, 1000);
-      toast.success('Payment Submitted');
-      paymentModal.onClose();
-      searchingModal.onOpen();
+if (!process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY) {
+  throw new Error('NEXT_PUBLIC_STRIPE_PUBLIC_KEY is not set');
+}
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY as string);
 
-      setIsLoading(false);
-    };
-  
-    const bodyContent = (
-      <div className="flex flex-col gap-6 items-center sm:items-stretch p-4">
-        <Heading
-          title="Payment Details"
-          subtitle="Enter your payment information"
-        />
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-md">
-        </div>
-      </div>
-    );
-  
-    const footerContent = (
-      <div className="text-neutral-500 text-center font-light mt-4 p-2">
-        <p>Ensure your payment details are correct before submitting.</p>
-      </div>
-    );
-  
-    return (
-      <Modal
-        disabled={isLoading}
-        isOpen={paymentModal.isOpen}
-        title="Payment Information"
-        actionLabel="Submit Payment"
-        onClose={paymentModal.onClose}
-        onSubmit={handleSubmit(onSubmit)}
-        body={bodyContent}
-        footer={footerContent}
-      />
-    );
+const PaymentModal: React.FC = () => {
+  const paymentModal = usePaymentModal();
+  const searchingModal = useSearchingModal();
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [sessionId, setSessionId] = useState<string | null>(null); // New state for session ID
+
+  // Fetch client secret for the Checkout Session
+  const fetchClientSecret = useCallback(async (): Promise<void> => {
+    try {
+      const response = await fetch('http://localhost:3000/payments/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: 2000, // Specify the amount in cents
+        }),
+      });
+      
+      const data = await response.json();
+      console.log('Received client secret:', data.clientSecret);
+      setClientSecret(data.clientSecret);
+      setSessionId(data.sessionId); // Store session ID
+    } catch (error) {
+      console.error('Error fetching session ID:', error);
+    }
+  }, []);
+
+  // Fetch client secret on component mount
+  useEffect(() => {
+    fetchClientSecret();
+  }, [fetchClientSecret]);
+
+  // Handle payment success
+  const handlePaymentSuccess = () => {
+    toast.success('Payment successful');
+    console.log('Payment successful');
+    paymentModal.onClose();
+    searchingModal.onOpen();
+    setSessionId(null); // Clear session ID
   };
 
+  // Handle payment error
+  const handlePaymentError = (error: Error) => {
+    console.error('Payment error:', error);
+    toast.error(`Payment failed: ${error.message}`);
+    setSessionId(null); // Clear session ID
+  };
+  // Polling function to check payment status
+  const pollPaymentStatus = useCallback(async () => {
+    try {
+      if (!sessionId) return; // Check if sessionId is available
 
+      const response = await fetch(`http://localhost:3000/payments/check-payment-status?sessionId=${sessionId}`);
+      const data = await response.json();
+      console.log('Received payment status:', data);
+  
+      if (data.paymentStatus === 'paid') {
+        handlePaymentSuccess();
+      }
+    } catch (error) {
+      console.error('Error checking payment status:', error);
+    }
+  }, [sessionId, handlePaymentSuccess]);
 
+  useEffect(() => {
+    if (clientSecret) {
+      const interval = setInterval(pollPaymentStatus, 3000); // Poll every 3 seconds
+      return () => clearInterval(interval); // Clear the interval when component unmounts
+    }
+  }, [clientSecret, pollPaymentStatus]);
+  
+
+  return (
+    <Modal
+      isOpen={paymentModal.isOpen}
+      onClose={paymentModal.onClose}
+      title="Payment"
+      onSubmit={paymentModal.onClose} // Close the modal on submit
+      actionLabel="Close" // Provide a label for the action button
+    >
+      <div className="flex flex-col gap-6 items-center sm:items-stretch p-4">
+        <Heading
+          title="Complete Your Payment"
+          subtitle="Please complete your payment below"
+        />
+        {clientSecret && (
+          <div className="w-full max-w-sm sm:max-w-xs mx-auto p-4"> {/* Updated max-width and responsive adjustments */}
+            <EmbeddedCheckoutProvider
+              stripe={stripePromise}
+              options={{ clientSecret }}
+              onComplete={handlePaymentSuccess}
+              onError={handlePaymentError}
+            >
+              <EmbeddedCheckout />
+            </EmbeddedCheckoutProvider>
+          </div>
+        )}
+      </div>
+    </Modal>
+  );
+  
+  
+};
 
 export default PaymentModal;
