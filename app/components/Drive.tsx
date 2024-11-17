@@ -10,39 +10,56 @@ const Drive = () => {
   const [location, setLocation] = useState<{ lat: number | null; lng: number | null }>({ lat: null, lng: null });
   const [socket, setSocket] = useState(null);
   const [showRideRequest, setShowRideRequest] = useState(false);
-  const [riderData, setRiderData] = useState<{ riderID?: string; distance?: string; pickupLocation?: string; dropoffLocation?: string }>({});
-  const [driverID, setDriverID] = useState<number | null>(null); // New state for driverID
+  const [riderData, setRiderData] = useState<{
+    riderID?: string;
+    distance?: string;
+    pickupLocation?: string;
+    dropoffLocation?: string;
+    googleMapsLink?: string;
+  }>({});
+  const [driverID, setDriverID] = useState<number | null>(null);
+  const [updateInterval, setUpdateInterval] = useState<number | null>(null); // Store interval ID
 
   useEffect(() => {
     const setupSocket = async () => {
       if (isDriving) {
         const newSocket = io('https://octopus-app-agn55.ondigitalocean.app/');
         setSocket(newSocket);
-        
-        const driverEmail = localStorage.getItem('userEmail'); // Retrieve email from local storage
+
+        const driverEmail = localStorage.getItem('userEmail');
         if (!driverEmail) {
           console.error("User email not found in local storage");
           alert("Please log in again.");
           return;
         }
-        
+
         try {
           const idResponse = await axios.get(
             `https://octopus-app-agn55.ondigitalocean.app/users/${driverEmail}/id`
           );
-          const fetchedDriverID = idResponse.data.userID; // Extract the userID from the response
-          setDriverID(fetchedDriverID); // Store driverID in state
+          const fetchedDriverID = idResponse.data.userID;
+          setDriverID(fetchedDriverID);
 
           newSocket.emit('startDrive', { driverID: fetchedDriverID });
 
           newSocket.on('rideAcceptedNotification', (data) => {
             console.log('Ride accepted by rider, received data:', data);
+
+            const googleMapsLink = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(
+              data.pickupLocation
+            )}&destination=${encodeURIComponent(data.dropoffLocation)}`;
+
             setRiderData({
               riderID: data.riderID || 'N/A',
               distance: data.distance || 'N/A',
               pickupLocation: data.pickupLocation || 'N/A',
               dropoffLocation: data.dropoffLocation || 'N/A',
+              googleMapsLink,
             });
+
+            // Start periodic location updates
+            startLocationUpdates(fetchedDriverID);
+
             setShowRideRequest(true);
           });
         } catch (error) {
@@ -54,24 +71,62 @@ const Drive = () => {
 
     setupSocket();
 
-    // Cleanup function to disconnect socket when component unmounts or `isDriving` changes
+    // Cleanup function
     return () => {
       if (socket) {
         socket.disconnect();
         setSocket(null);
       }
+      stopLocationUpdates(); // Stop location updates on unmount or driving stop
     };
   }, [isDriving]);
+
+  const startLocationUpdates = (driverID: number) => {
+    const interval = setInterval(async () => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const userLat = position.coords.latitude;
+            const userLng = position.coords.longitude;
+
+            try {
+              await axios.put(
+                `https://octopus-app-agn55.ondigitalocean.app/drivers/${driverID}/location`,
+                { userLat, userLng },
+                { headers: { 'Content-Type': 'application/json' } }
+              );
+              console.log('Driver location updated:', { userLat, userLng });
+            } catch (error) {
+              console.error('Error updating driver location:', error);
+            }
+          },
+          (error) => {
+            console.error('Error fetching location:', error);
+          }
+        );
+      }
+    }, 5000); // Update every 5 seconds
+
+    setUpdateInterval(interval);
+  };
+
+  const stopLocationUpdates = () => {
+    if (updateInterval) {
+      clearInterval(updateInterval);
+      setUpdateInterval(null);
+      console.log('Stopped periodic location updates.');
+    }
+  };
 
   const handleStartDrive = () => {
     setIsDriving(true);
     console.log('Driver started looking for a ride...');
-    const driverEmail = localStorage.getItem('userEmail'); // Retrieve email from local storage
+    const driverEmail = localStorage.getItem('userEmail');
     if (!driverEmail) {
       console.error("User email not found in local storage");
       alert("Please log in again.");
       return;
-    }  
+    }
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
@@ -82,32 +137,26 @@ const Drive = () => {
           console.log('Driver location:', { userLat, userLng });
 
           try {
-            // Step 1: Get the driver ID by email
             const idResponse = await axios.get(
               `https://octopus-app-agn55.ondigitalocean.app/users/${driverEmail}/id`
             );
-            const fetchedDriverID = idResponse.data.userID; // Extract the userID from the response
-            setDriverID(fetchedDriverID); // Store driverID in state
+            const fetchedDriverID = idResponse.data.userID;
+            setDriverID(fetchedDriverID);
 
-            // Step 2: Activate the driver using the fetched driverID
-            const activateResponse = await axios.put(
+            await axios.put(
               `https://octopus-app-agn55.ondigitalocean.app/users/${fetchedDriverID}/activate`,
               { headers: { 'Content-Type': 'application/json' } }
             );
 
-            console.log('User activated successfully:', activateResponse.data);
+            console.log('User activated successfully.');
 
-            // Step 3: Update the driver's location using the fetched driverID
-            const updateResponse = await axios.put(
+            await axios.put(
               `https://octopus-app-agn55.ondigitalocean.app/drivers/${fetchedDriverID}/location`,
-              {
-                userLat,
-                userLng,
-              },
+              { userLat, userLng },
               { headers: { 'Content-Type': 'application/json' } }
             );
 
-            console.log('Driver location updated successfully:', updateResponse.data);
+            console.log('Driver location updated successfully.');
           } catch (error) {
             console.error('Error activating or updating driver location:', error);
             alert('Failed to activate or update driver location on the server.');
@@ -125,15 +174,15 @@ const Drive = () => {
 
   const handleStopDrive = async () => {
     setIsDriving(false);
+    stopLocationUpdates(); // Stop periodic location updates
     console.log('Driver stopped looking for a ride');
 
     if (driverID !== null) {
-      const activateResponse = await axios.put(
+      await axios.put(
         `https://octopus-app-agn55.ondigitalocean.app/users/${driverID}/deactivate`,
         { headers: { 'Content-Type': 'application/json' } }
       );
-
-      console.log('User deactivated successfully:', activateResponse.data);
+      console.log('User deactivated successfully.');
     } else {
       console.error("driverID is not defined.");
     }
@@ -144,25 +193,6 @@ const Drive = () => {
     }
     setShowRideRequest(false);
     setRiderData({});
-  };
-
-  const handleAcceptRide = () => {
-    if (socket) {
-      console.log('Driver accepted the ride request:', riderData);
-      socket.emit('driverAcceptRide', { riderID: riderData.riderID });
-      alert('You have accepted the ride.');
-      setShowRideRequest(false);
-    }
-  };
-
-  const handleRejectRide = () => {
-    if (socket) {
-      console.log('Driver rejected the ride request:', riderData);
-      socket.emit('driverRejectRide', { riderID: riderData.riderID });
-      alert('You have rejected the ride.');
-      setShowRideRequest(false);
-      setRiderData({});
-    }
   };
 
   return (
@@ -191,7 +221,6 @@ const Drive = () => {
             <p className="text-xl text-gray-700">Searching for Drive...</p>
           </div>
         )}
-        
         {showRideRequest && riderData && (
           <div className="mt-10 text-center">
             <h2 className="text-xl font-semibold">Ride Request</h2>
@@ -199,6 +228,16 @@ const Drive = () => {
             <p>Distance: {riderData.distance}</p>
             <p>Pickup Location: {riderData.pickupLocation}</p>
             <p>Dropoff Location: {riderData.dropoffLocation}</p>
+            {riderData.googleMapsLink && (
+              <a
+                href={riderData.googleMapsLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-500 underline mt-2"
+              >
+                View Directions in Google Maps
+              </a>
+            )}
           </div>
         )}
       </div>

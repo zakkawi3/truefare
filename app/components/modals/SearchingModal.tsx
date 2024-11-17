@@ -136,6 +136,14 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }: Searchi
       });
 
       toast.success("Ride accepted!");
+      router.push({
+        pathname: '/RouteModal',
+        query: { 
+          pickupLocation: encodeURIComponent(pickupLocation),
+          dropoffLocation: encodeURIComponent(dropoffLocation),
+          driver: driverID,
+        },
+      });
       searchingModal.onClose();
     } else {
       console.error("Driver or Socket information is missing.");
