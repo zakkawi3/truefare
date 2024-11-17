@@ -9,6 +9,7 @@ import useDriverAssignmentModal from '../hooks/useDriverAssignmentModal';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 import SearchingModal from '../components/modals/SearchingModal';
+import PaymentModal from '../components/modals/PaymentModal'; // Import PaymentModal
 
 const center = { lat: 33.7501, lng: -84.3880 }; // Default map center
 
@@ -23,6 +24,10 @@ export default function Ride() {
   const [originCoords, setOriginCoords] = useState<{ lat: number, lng: number } | null>(null);
   const [pickupLocation, setPickupLocation] = useState(''); // New state for pickup location
   const [dropoffLocation, setDropoffLocation] = useState(''); // New state for dropoff location
+  const [pickupLat, setPickupLat] = useState<number | null>(null); // New state for pickup latitude
+  const [pickupLng, setPickupLng] = useState<number | null>(null); // New state for pickup longitude
+  const [dropoffLat, setDropoffLat] = useState<number | null>(null); // New state for dropoff latitude
+  const [dropoffLng, setDropoffLng] = useState<number | null>(null); // New state for dropoff longitude
 
   const originRef = useRef<HTMLInputElement>(null);
   const destinationRef = useRef<HTMLInputElement>(null);
@@ -103,6 +108,10 @@ export default function Ride() {
         // Store pickup and dropoff locations
         setPickupLocation(originRef.current.value);
         setDropoffLocation(destinationRef.current.value);
+        setPickupLat(pickupLat); // Set pickup latitude
+        setPickupLng(pickupLng); // Set pickup longitude
+        setDropoffLat(dropoffLat); // Set dropoff latitude
+        setDropoffLng(dropoffLng); // Set dropoff longitude
       } else {
         console.error('Error calculating price:', data);
       }
@@ -242,6 +251,10 @@ export default function Ride() {
 
     {originCoords && (
       <SearchingModal userCoords={originCoords} pickupLocation={pickupLocation} dropoffLocation={dropoffLocation} />
+    )}
+
+    {pickupLat && pickupLng && dropoffLat && dropoffLng && (
+      <PaymentModal pickupLat={pickupLat} pickupLng={pickupLng} dropoffLat={dropoffLat} dropoffLng={dropoffLng} />
     )}
   </Container>
   );

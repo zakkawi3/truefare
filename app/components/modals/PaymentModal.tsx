@@ -17,7 +17,7 @@ if (!process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY) {
 }
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY as string);
 
-const PaymentModal: React.FC = () => {
+const PaymentModal: React.FC<{ pickupLat: number, pickupLng: number, dropoffLat: number, dropoffLng: number }> = ({ pickupLat, pickupLng, dropoffLat, dropoffLng }) => {
   const paymentModal = usePaymentModal();
   const searchingModal = useSearchingModal();
   const [clientSecret, setClientSecret] = useState<string | null>(null);
@@ -26,24 +26,35 @@ const PaymentModal: React.FC = () => {
   // Fetch client secret for the Checkout Session
   const fetchClientSecret = useCallback(async (): Promise<void> => {
     try {
+      // Get the calculated amount from the backend
+      const res = await fetch(`https://octopus-app-agn55.ondigitalocean.app/riders/calculatePrice?pickupLat=${pickupLat}&pickupLng=${pickupLng}&dropoffLat=${dropoffLat}&dropoffLng=${dropoffLng}`);
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || 'Failed to calculate price');
+      }
+
+      const calculatedCost = data.price * 100; // Convert to cents
+      console.log('Calculated cost:', calculatedCost);
+
       const response = await fetch('http://localhost:3000/payments/create-checkout-session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          amount: 2000, // Specify the amount in cents
+          amount: calculatedCost, // Use the calculated amount in cents
         }),
       });
-      
-      const data = await response.json();
-      console.log('Received client secret:', data.clientSecret);
-      setClientSecret(data.clientSecret);
-      setSessionId(data.sessionId); // Store session ID
+
+      const responseData = await response.json();
+      console.log('Received client secret:', responseData.clientSecret);
+      setClientSecret(responseData.clientSecret);
+      setSessionId(responseData.sessionId); // Store session ID
     } catch (error) {
       console.error('Error fetching session ID:', error);
     }
-  }, []);
+  }, [pickupLat, pickupLng, dropoffLat, dropoffLng]);
 
   // Fetch client secret on component mount
   useEffect(() => {
@@ -65,6 +76,7 @@ const PaymentModal: React.FC = () => {
     toast.error(`Payment failed: ${error.message}`);
     setSessionId(null); // Clear session ID
   };
+
   // Polling function to check payment status
   const pollPaymentStatus = useCallback(async () => {
     try {
@@ -73,7 +85,7 @@ const PaymentModal: React.FC = () => {
       const response = await fetch(`http://localhost:3000/payments/check-payment-status?sessionId=${sessionId}`);
       const data = await response.json();
       console.log('Received payment status:', data);
-  
+
       if (data.paymentStatus === 'paid') {
         handlePaymentSuccess();
       }
@@ -88,7 +100,6 @@ const PaymentModal: React.FC = () => {
       return () => clearInterval(interval); // Clear the interval when component unmounts
     }
   }, [clientSecret, pollPaymentStatus]);
-  
 
   return (
     <Modal
@@ -118,8 +129,6 @@ const PaymentModal: React.FC = () => {
       </div>
     </Modal>
   );
-  
-  
 };
 
 export default PaymentModal;
