@@ -7,7 +7,7 @@ interface PaymentModalStore {
   }
   
   const usePaymentModal = create<PaymentModalStore>((set) => ({
-    isOpen: true,
+    isOpen: false,
   
     onOpen: () => set({ isOpen: true }),
     onClose: () => set({ isOpen: false }),
