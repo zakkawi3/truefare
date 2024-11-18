@@ -1,37 +1,22 @@
 'use client';
-
-import { io, Socket } from 'socket.io-client';
+import { io } from 'socket.io-client';
 import axios from 'axios';
 import { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/router';
 import { FieldValues, useForm } from 'react-hook-form';
 
 import useSearchingModal from '@/app/hooks/useSearchingModal';
 import Modal from './Modal';
 import toast from 'react-hot-toast';
 
-// Type definitions for props
-type UserCoords = {
-  lat: number;
-  lng: number;
-};
-
-interface SearchingModalProps {
-  userCoords: UserCoords;
-  pickupLocation: string;
-  dropoffLocation: string;
-}
-
-const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }: SearchingModalProps) => {
+const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
   const searchingModal = useSearchingModal();
   const [isLoading, setIsLoading] = useState(false);
-  const [socket, setSocket] = useState<Socket | null>(null);  // Define socket type
+  const [socket, setSocket] = useState(null);
   const [driverData, setDriverData] = useState(null);
   const [intervalId, setIntervalId] = useState(null);
+
   const hardcodedLat = 33.7490; // Atlanta latitude
   const hardcodedLng = -84.3880; // Atlanta longitude
-
-
   
   const { register, formState: { errors } } = useForm<FieldValues>({
     defaultValues: {
@@ -47,7 +32,7 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }: Searchi
       console.error("User coordinates are missing at pollClosestDriver.");
       return;
     }
-
+  
     console.log('Polling https://octopus-app-agn55.ondigitalocean.app/riders/closestDriver', userCoords);
     setIsLoading(true);
     try {
@@ -57,11 +42,10 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }: Searchi
           userLng: hardcodedLng,
         },
       });
-
+  
       console.log('Received response from /riders/closestDriver:', response.data);
       setDriverData(response.data); 
       toast.success('Searching for closest driver...', { id: 'searching-toast' });
-
       // Stop polling after finding a driver
       if (intervalId) {
         clearInterval(intervalId);
@@ -73,7 +57,8 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }: Searchi
     } finally {
       setIsLoading(false);
     }
-  }, [userCoords, intervalId, hardcodedLng]);  // Added hardcodedLng to dependencies
+  }, [userCoords]);
+  
 
   useEffect(() => {
     if (searchingModal.isOpen) {
@@ -99,7 +84,7 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }: Searchi
     if (searchingModal.isOpen && !intervalId) {
       console.log("Starting polling interval...");
       const id = setInterval(pollClosestDriver, 5000); 
-      setIntervalId(id as NodeJS.Timeout);  // Type cast to NodeJS.Timeout
+      setIntervalId(id);
     }
 
     return () => {
@@ -110,6 +95,13 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }: Searchi
       }
     };
   }, [searchingModal.isOpen, intervalId, pollClosestDriver]);
+
+  // New useEffect to trigger handleAcceptRide only when driverData is set
+  useEffect(() => {
+    if (driverData) {
+      handleAcceptRide();
+    }
+  }, [driverData]);
 
   const handleAcceptRide = () => {
     if (socket && driverData) {
@@ -136,14 +128,6 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }: Searchi
       });
 
       toast.success("Ride accepted!");
-      router.push({
-        pathname: '/RouteModal',
-        query: { 
-          pickupLocation: encodeURIComponent(pickupLocation),
-          dropoffLocation: encodeURIComponent(dropoffLocation),
-          driver: driverID,
-        },
-      });
       searchingModal.onClose();
     } else {
       console.error("Driver or Socket information is missing.");
@@ -158,20 +142,6 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }: Searchi
   const bodyContent = (
     <div className="flex flex-col gap-6 p-4 text-center">
       <h2 className="text-xl font-semibold text-gray-800">Searching for a driver...</h2>
-      
-      Car Silhouette Image
-      <div className="flex justify-center">
-        <div className="rounded-full border-4 border-black p-1"> {/* Circular border styling */}
-          {/* <Image 
-            src="/images/car.png" 
-            alt="Car silhouette" 
-            width={120} 
-            height={120} 
-            className="rounded-full" // Rounded image for circular edges
-          /> */}
-        </div>
-      </div>
-
       {driverData ? (
         <div className="space-y-4">
           <p className="text-lg font-medium text-green-700">Driver found!</p>
@@ -179,22 +149,8 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }: Searchi
             <span className="font-semibold">Driver ID:</span> {driverData.driverID}
           </p>
           <p className="text-gray-600">
-            <span className="font-semibold">Distance:</span> {driverData.distance} km
+            <span className="font-semibold">Distance:</span> {driverData.distance}
           </p>
-          <div className="mt-4 flex gap-4">
-            <button
-              className="bg-blue-500 text-white rounded-lg py-2 px-4 hover:bg-blue-600"
-              onClick={handleAcceptRide}
-            >
-              Accept
-            </button>
-            <button
-              className="bg-red-500 text-white rounded-lg py-2 px-4 hover:bg-red-600"
-              onClick={handleDeclineRide}
-            >
-              Decline
-            </button>
-          </div>
         </div>
       ) : (
         <p className="text-gray-500">We’re currently looking for available drivers...</p>
