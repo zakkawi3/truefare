@@ -80,19 +80,39 @@ const Drive = () => {
     };
   }, [isDriving]);
 
-  const handleAcceptRide = () => {
+  const handleAcceptRide = async () => {
     console.log('Ride accepted by driver:', riderData);
     if (socket && driverID && riderData.riderID) {
-      socket.emit('rideAccepted', {
-        driverID,
-        riderID: riderData.riderID,
-      });
-
-      toast.success('Ride accepted!');
-      setAcceptedRideInfo({ ...riderData });
-      setShowRideRequest(false);
+      try {
+        // Emit event to notify backend that ride is accepted
+        socket.emit('rideAccepted', {
+          driverID,
+          riderID: riderData.riderID,
+        });
+  
+        // Deactivate driver in the backend
+        await axios.put(
+          `${BACKEND_URL}/users/${driverID}/deactivate`,
+          {},
+          { headers: { 'Content-Type': 'application/json' } }
+        );
+        console.log('Driver status set to inactive.');
+  
+        // Display toast notification
+        toast.success('Ride accepted!');
+  
+        // Update accepted ride info on the page
+        setAcceptedRideInfo({ ...riderData });
+  
+        // Hide modal
+        setShowRideRequest(false);
+      } catch (error) {
+        console.error('Error setting driver status to inactive:', error);
+        alert('Failed to update driver status to inactive.');
+      }
     }
   };
+  
 
   const handleDeclineRide = () => {
     console.log('Ride declined by driver:', riderData);
