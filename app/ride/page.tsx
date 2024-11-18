@@ -1,15 +1,15 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Container from '../components/Container';
 import { FaLocationArrow } from 'react-icons/fa';
 import { useJsApiLoader, GoogleMap, Marker, DirectionsRenderer, Autocomplete } from '@react-google-maps/api';
 import useRidePriceModal from '../hooks/useRidePriceModal';
 import useDriverAssignmentModal from '../hooks/useDriverAssignmentModal';
-import axios from 'axios';
 import { io } from 'socket.io-client';
 import SearchingModal from '../components/modals/SearchingModal';
 import PaymentModal from '../components/modals/PaymentModal'; // Import PaymentModal
+import RidePriceModal from '../components/modals/RidePriceModal'; // Import RidePriceModal
 
 const center = { lat: 33.7501, lng: -84.3880 }; // Default map center
 
@@ -73,8 +73,8 @@ export default function Ride() {
   
     setDirectionsResponse(results);
   
-    const distanceText = results.routes[0].legs[0].distance.text;
-    const durationText = results.routes[0].legs[0].duration.text;
+    const distanceText = results.routes[0].legs[0].distance?.text || '';
+    const durationText = results.routes[0].legs[0].duration?.text || '';
     setDistance(distanceText);
     setDuration(durationText);
   
@@ -100,9 +100,11 @@ export default function Ride() {
         // Extract origin coordinates and set them
         const originPlace = originAutoCompleteRef.current?.getPlace();
         if (originPlace && originPlace.geometry) {
-          const lat = originPlace.geometry.location.lat();
-          const lng = originPlace.geometry.location.lng();
-          setOriginCoords({ lat, lng });
+          const lat = originPlace.geometry.location?.lat();
+          const lng = originPlace.geometry.location?.lng();
+          if (lat !== undefined && lng !== undefined) {
+            setOriginCoords({ lat, lng });
+          }
         }
   
         // Store pickup and dropoff locations
@@ -173,7 +175,7 @@ export default function Ride() {
           )}
         </div>
 
-        <div className="flex flex-col space-y-2">
+        <div className="flex flex-col space-y=2">
           <label className="text-sm font-medium">Drop-off Location</label>
           {isLoaded && (
             <Autocomplete
@@ -256,6 +258,8 @@ export default function Ride() {
     {pickupLat && pickupLng && dropoffLat && dropoffLng && (
       <PaymentModal pickupLat={pickupLat} pickupLng={pickupLng} dropoffLat={dropoffLat} dropoffLng={dropoffLng} />
     )}
+
+    <RidePriceModal />
   </Container>
   );
 }

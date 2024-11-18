@@ -51,7 +51,7 @@ const LoginModal = () => {
         setIsLoading(false);
   
         if(callback?.ok){
-            toast.success('Logged in');
+            // toast.success('Logged in');
             // Save the email to local storage after a successful login
             localStorage.setItem('userEmail', data.email);
             router.refresh();

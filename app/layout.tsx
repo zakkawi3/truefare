@@ -37,8 +37,8 @@ export default function RootLayout({
             <LoginModal />
             <RideModal />
             <RidePriceModal />
-            <SearchingModal userCoords={undefined} pickupLocation={undefined} dropoffLocation={undefined} />
-            <PaymentModal />
+            <SearchingModal userCoords={{ lat: 0, lng: 0 }} pickupLocation={""} dropoffLocation={""} />
+            <PaymentModal pickupLat={0} pickupLng={0} dropoffLat={0} dropoffLng={0} />
             <DriverAssignmentModal />
             <Navbar />
             <div className="pt-16"> {/* Adjust pt-16 based on your navbar height */}
