@@ -1,24 +1,25 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import GoogleMapReact from 'google-map-react';
-import { useState, useEffect } from 'react';
+import useRouteModal from '@/app/hooks/useRouteModal';
+import useRoute2Modal from '@/app/hooks/useRoute2Modal';
 import axios from 'axios';
 import { BACKEND_URL } from '@/app/config/config';
 
-
 const RouteModal = () => {
-  const router = useRouter();
-  const { pickupLocation, dropoffLocation, driver } = router.query; // Retrieve query parameters
+  const routeModal = useRouteModal();
+  const route2Modal = useRoute2Modal();
+  const { isOpen, onClose, pickupLocation, dropoffLocation, driverID } = routeModal;
+
   const [driverLocation, setDriverLocation] = useState<{ lat: number; lng: number } | null>(null);
 
-  // Fetch the driver's location using the driverID
   useEffect(() => {
     const fetchDriverLocation = async () => {
       try {
         console.log('Fetching driver location from backend...');
         const response = await axios.get(`${BACKEND_URL}/drivers/location`, {
-          params: { driverID: driver }, // Passing driverID as a query parameter
+          params: { driverID }, // Passing driverID as a query parameter
         });
         const { coordinates } = response.data.location; // Assuming response contains { "type": "Point", "coordinates": [lng, lat] }
         setDriverLocation({ lat: coordinates[1], lng: coordinates[0] }); // Update state with lat and lng
@@ -26,33 +27,32 @@ const RouteModal = () => {
         console.error('Error fetching driver location:', error);
       }
     };
-  
-    if (driver) {
-      fetchDriverLocation(); // Call the function if driverID is available
-    }
-  }, [driver]);
 
-  const handleCancelTrip = () => {
-    router.push('/LoginModal'); // Navigate back to LoginModal
-  };
+    if (driverID) {
+      fetchDriverLocation();
+    }
+  }, [driverID]);
 
   const handlePickedUp = () => {
-    router.push({
-      pathname: '/Route2Modal',
-      query: {
-        pickupLocation: pickupLocation as string, // Pass pickupLocation as-is
-        dropoffLocation: dropoffLocation as string, // Pass dropoffLocation as-is
-      },
-    });
+    onClose(); // Close RouteModal
+    route2Modal.onOpen(pickupLocation, dropoffLocation); // Open Route2Modal
   };
+
+  if (!isOpen) return null; // Do not render if RouteModal is closed
 
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">Route to Driver</h1>
+      <p>
+        <strong>Pickup Location:</strong> {pickupLocation}
+      </p>
+      <p>
+        <strong>Dropoff Location:</strong> {dropoffLocation}
+      </p>
       <div className="flex justify-between mb-4">
         <button
           className="bg-red-500 text-white rounded-lg py-2 px-4 hover:bg-red-600"
-          onClick={handleCancelTrip}
+          onClick={onClose}
         >
           Cancel Trip
         </button>
@@ -66,7 +66,7 @@ const RouteModal = () => {
       {driverLocation ? (
         <div style={{ height: '400px', width: '100%' }}>
           <GoogleMapReact
-            bootstrapURLKeys={{ key: NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }} // Replace with your API Key
+            bootstrapURLKeys={{ key: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }} // Replace with your API Key
             center={driverLocation}
             defaultZoom={14}
           >
