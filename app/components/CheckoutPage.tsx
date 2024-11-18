@@ -14,12 +14,13 @@ const CheckoutPage = ({ amount }: { amount: number }) => {
     const [errorMessage, setErrorMessage] = useState<string>();
     const [clientSecret, setClientSecret] = useState("");
     const [loading, setLoading] = useState(false);
+    const [paymentStatus, setPaymentStatus] = useState<'idle' | 'success' | 'failed'>('idle');
 
     useEffect(() => {
         fetch("/api/create-payment-intent", {
             method: "POST",
             headers: {
-                "Content-Type": "application/json" // Fix content type
+                "Content-Type": "application/json",
             },
             body: JSON.stringify({ amount: Math.round(amount * 100) }),
         })
@@ -44,13 +45,14 @@ const CheckoutPage = ({ amount }: { amount: number }) => {
         const { error } = await stripe.confirmPayment({
             elements,
             clientSecret,
-            confirmParams: {
-                return_url: "http://localhost:3000/ride", // Add query parameter for payment status
-            },
         });
 
         if (error) {
+            setPaymentStatus('failed');
             console.error("Payment failed:", error.message);
+            setErrorMessage(error.message); // Display error message
+        } else {
+            setPaymentStatus('success'); // Set payment status to success
         }
 
         setLoading(false);
@@ -70,10 +72,19 @@ const CheckoutPage = ({ amount }: { amount: number }) => {
             </div>
         );
     }
-    
 
     return (
         <form onSubmit={handleSubmit} className="bg-white p-2 rounded-md">
+            {paymentStatus === 'success' && (
+                <div className="text-green-500 mb-4 p-2 bg-green-100 rounded-md">
+                    Payment Successful! Thank you for your purchase.
+                </div>
+            )}
+            {paymentStatus === 'failed' && errorMessage && (
+                <div className="text-red-500 mb-4 p-2 bg-red-100 rounded-md">
+                    Payment failed: {errorMessage}
+                </div>
+            )}
             {clientSecret && <PaymentElement />}
             <button
                 disabled={!stripe || loading}

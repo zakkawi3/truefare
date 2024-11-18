@@ -38,7 +38,8 @@ const RidePriceModal = () => {
     ridePriceModal.onClose();
 
     // Now the router is available here and can be used safely
-    router.push('/checkout');  // Navigate to CheckoutPage
+    //router.push('/checkout');  // Navigate to CheckoutPage
+    paymentModal.onOpen();
 
     // Optionally, you could open the SearchingModal if you want to display a loading state
     //searchingModal.onOpen();

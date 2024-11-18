@@ -4,6 +4,8 @@ import { io, Socket } from 'socket.io-client';
 import axios from 'axios';
 import { useState, useEffect, useCallback } from 'react';
 import { FieldValues, useForm } from 'react-hook-form';
+import Image from 'next/image';
+
 
 import useSearchingModal from '@/app/hooks/useSearchingModal';
 import Modal from './Modal';
