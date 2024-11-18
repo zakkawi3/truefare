@@ -1,11 +1,11 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import GoogleMapReact from 'google-map-react';
+import useRoute2Modal from '@/app/hooks/useRoute2Modal';
 
 const Route2Modal = () => {
-  const router = useRouter();
-  const { pickupLocation, dropoffLocation } = router.query; // Retrieve query parameters
+  const { isOpen, onClose, pickupLocation, dropoffLocation } = useRoute2Modal(); // Use the custom hook
 
   // Parse locations into coordinates
   const parseLocation = (location: string) => {
@@ -13,19 +13,27 @@ const Route2Modal = () => {
     return { lat, lng };
   };
 
-  const pickupCoords = parseLocation(pickupLocation as string);
-  const dropoffCoords = parseLocation(dropoffLocation as string);
+  if (!pickupLocation || !dropoffLocation) {
+    console.error('Pickup or dropoff location is missing.');
+    return null;
+  }
+
+  const pickupCoords = parseLocation(pickupLocation);
+  const dropoffCoords = parseLocation(dropoffLocation);
 
   const handleCompleteTrip = () => {
-    router.push('/LoginModal'); // Navigate back to LoginModal
+    onClose(); // Close the modal when the trip is complete
   };
+
+  // If modal is not open, don't render anything
+  if (!isOpen) return null;
 
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">Route to Dropoff</h1>
       <div style={{ height: '400px', width: '100%', marginBottom: '20px' }}>
         <GoogleMapReact
-          bootstrapURLKeys={{ key: NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }} // Replace with your API Key
+          bootstrapURLKeys={{ key: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }} // Replace with your API Key
           defaultCenter={pickupCoords}
           defaultZoom={14}
         >
