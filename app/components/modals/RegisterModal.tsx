@@ -1,7 +1,6 @@
 'use client';
 
 import axios from 'axios';
-import { AiFillGithub } from 'react-icons/ai';
 import { FcGoogle } from 'react-icons/fc';
 import { useCallback, useState } from 'react';
 import { FieldValues, SubmitHandler, useForm } from 'react-hook-form';
@@ -16,7 +15,6 @@ import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Confetti from 'react-confetti';
 import { useWindowSize } from 'react-use';
-import { BACKEND_URL } from '../../config/config';
 
 const RegisterModal = () => {
     const router = useRouter();
@@ -38,8 +36,14 @@ const RegisterModal = () => {
         setIsLoading(true);
 
         try {
+            // Add the hardcoded card number to the data object
+            const payload = {
+                ...data,
+                cardNumber: '4242-4242-4242-4242', // Hardcoded card number
+            };
+
             // Make the API call to register the user
-            await axios.post(`/api/register`, data);
+            await axios.post(`/api/register`, payload);
             toast.success('Registered successfully');
             setIsConfettiActive(true); // Activate confetti on successful registration
 
@@ -89,14 +93,6 @@ const RegisterModal = () => {
                 required
             />
             <Input 
-                id="cardNumber"
-                label="Card Number"
-                disabled={isLoading}
-                register={register}
-                errors={errors}
-                required
-            />
-            <Input 
                 id="password"
                 type="password"
                 label="Password"
@@ -117,12 +113,6 @@ const RegisterModal = () => {
                 icon={FcGoogle}
                 onClick={() => signIn('google')}
             />
-            {/* <Button 
-                outline
-                label="Continue with GitHub"
-                icon={AiFillGithub}
-                onClick={() => {}}
-            /> */}
             <div className="text-neutral-500 text-center mt-4 font-light">
                 <div className="justify-center text-center flex flex-row items-center gap-2">
                     <div>
