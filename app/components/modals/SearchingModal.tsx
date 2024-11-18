@@ -159,16 +159,16 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }: Searchi
     <div className="flex flex-col gap-6 p-4 text-center">
       <h2 className="text-xl font-semibold text-gray-800">Searching for a driver...</h2>
       
-      {/* Car Silhouette Image */}
+      Car Silhouette Image
       <div className="flex justify-center">
         <div className="rounded-full border-4 border-black p-1"> {/* Circular border styling */}
-          <Image 
+          {/* <Image 
             src="/images/car.png" 
             alt="Car silhouette" 
             width={120} 
             height={120} 
             className="rounded-full" // Rounded image for circular edges
-          />
+          /> */}
         </div>
       </div>
 
