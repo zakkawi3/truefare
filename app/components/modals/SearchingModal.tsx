@@ -7,9 +7,11 @@ import { FieldValues, useForm } from 'react-hook-form';
 import useSearchingModal from '@/app/hooks/useSearchingModal';
 import Modal from './Modal';
 import toast from 'react-hot-toast';
+import useDriverAssignmentModal from '@/app/hooks/useDriverAssignmentModal';
 
 const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
   const searchingModal = useSearchingModal();
+  const driverAssignmentModal = useDriverAssignmentModal();
   const [isLoading, setIsLoading] = useState(false);
   const [socket, setSocket] = useState(null);
   const [driverData, setDriverData] = useState(null);
@@ -35,6 +37,8 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
   
     console.log('Polling https://octopus-app-agn55.ondigitalocean.app/riders/closestDriver', userCoords);
     setIsLoading(true);
+    const loadingToastId = toast.loading('Looking for closest driver...', { id: 'searching-toast' });
+
     try {
       const response = await axios.get('https://octopus-app-agn55.ondigitalocean.app/riders/closestDriver', { 
         params: {
@@ -45,15 +49,15 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
   
       console.log('Received response from /riders/closestDriver:', response.data);
       setDriverData(response.data); 
-      toast.success('Searching for closest driver...', { id: 'searching-toast' });
+      // toast.success('Searching for closest driver...', { id: 'searching-toast' });
       // Stop polling after finding a driver
       if (intervalId) {
         clearInterval(intervalId);
         setIntervalId(null);
       }
+      toast.dismiss(loadingToastId);
     } catch (error) {
       console.error('Error finding driver:', error);
-      toast.error('Something went wrong', { id: 'error-toast' });
     } finally {
       setIsLoading(false);
     }

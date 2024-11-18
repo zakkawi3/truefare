@@ -81,6 +81,8 @@ const PaymentModal: React.FC<{ pickupLat: number; pickupLng: number; dropoffLat:
       title="Payment"
       actionLabel="Close" // Only for the Close button
       onSubmit={handleCloseModal}
+      style={{maxHeight: '100vh', // Fixed max height for the modal
+        maxWidth: '100%',}}
     >
       {clientSecret && (
         <EmbeddedCheckoutProvider stripe={stripePromise} options={{ clientSecret }}>

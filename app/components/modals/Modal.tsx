@@ -17,6 +17,7 @@ interface ModalProps {
     secondaryActionLabel?: string;
     actionClassName?: string; 
     children?: React.ReactNode; 
+    style?: React.CSSProperties; 
   }
   
   const Modal: React.FC<ModalProps> = ({
@@ -31,7 +32,8 @@ interface ModalProps {
     secondaryAction,
     secondaryActionLabel,
     actionClassName,
-    children
+    children,
+    style
   }) => {
     const [showModal, setShowModal] = useState(isOpen);
 
@@ -109,6 +111,7 @@ interface ModalProps {
                     ${showModal ? 'translate-y-0' : 'translate-y-full'}
                     ${showModal ? 'opacity-100' : 'opacity-0'}
                 "
+                style={style}
             >
                 <div
                     className="

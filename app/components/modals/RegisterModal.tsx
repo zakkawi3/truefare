@@ -144,6 +144,8 @@ const RegisterModal = () => {
                 onSubmit={handleSubmit(onSubmit)}
                 body={bodyContent}
                 footer={footerContent}
+                style={{maxHeight: '100vh', // Fixed max height for the modal
+                    maxWidth: '100%',}}
             />
         </>
     );
