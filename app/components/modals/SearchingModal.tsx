@@ -1,19 +1,15 @@
 'use client';
-
 import { io } from 'socket.io-client';
 import axios from 'axios';
 import { useState, useEffect, useCallback } from 'react';
 import { FieldValues, useForm } from 'react-hook-form';
 
 import useSearchingModal from '@/app/hooks/useSearchingModal';
-import useRouteModal from '@/app/hooks/useRouteModal';
 import Modal from './Modal';
 import toast from 'react-hot-toast';
-import { BACKEND_URL } from '@/app/config/config';
 
 const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
   const searchingModal = useSearchingModal();
-  const routeModal = useRouteModal(); // Use the RouteModal hook
   const [isLoading, setIsLoading] = useState(false);
   const [socket, setSocket] = useState(null);
   const [driverData, setDriverData] = useState(null);
@@ -37,10 +33,10 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
       return;
     }
   
-    console.log('Polling ${BACKEND_URL}/riders/closestDriver', userCoords);
+    console.log('Polling https://octopus-app-agn55.ondigitalocean.app/riders/closestDriver', userCoords);
     setIsLoading(true);
     try {
-      const response = await axios.get(`${BACKEND_URL}/riders/closestDriver`, { 
+      const response = await axios.get('https://octopus-app-agn55.ondigitalocean.app/riders/closestDriver', { 
         params: {
           userLat: hardcodedLat,
           userLng: hardcodedLng,
@@ -62,16 +58,18 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
       setIsLoading(false);
     }
   }, [userCoords]);
+  
 
   useEffect(() => {
     if (searchingModal.isOpen) {
       console.log("Opening WebSocket connection...");
-      const newSocket = io(`${BACKEND_URL}`);
+      const newSocket = io('https://octopus-app-agn55.ondigitalocean.app');
       setSocket(newSocket);
 
       newSocket.on('rideAssigned', (data) => {
         console.log('Driver assigned:', data);
         setDriverData(data);
+        //toast.success('Driver found! Ride assigned.', { id: 'assigned-toast' });
         toast.success('Driver found! Ride assigned.', { id: 'assigned-toast' });
       });
 
@@ -99,11 +97,18 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
     };
   }, [searchingModal.isOpen, intervalId, pollClosestDriver]);
 
+  // New useEffect to trigger handleAcceptRide only when driverData is set
+  useEffect(() => {
+    if (driverData) {
+      handleAcceptRide();
+    }
+  }, [driverData]);
+
   const handleAcceptRide = () => {
     if (socket && driverData) {
       const {
         driverID,
-        riderID = "sampleRiderID", 
+        riderID = "Angel Cabrera", 
         distance = driverData.distance || "Unknown distance"
       } = driverData;
 
@@ -124,9 +129,7 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
       });
 
       toast.success("Ride accepted!");
-
       searchingModal.onClose();
-      routeModal.onOpen(pickupLocation, dropoffLocation, driverID);
     } else {
       console.error("Driver or Socket information is missing.");
     }
@@ -144,23 +147,11 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
         <div className="space-y-4">
           <p className="text-lg font-medium text-green-700">Driver found!</p>
           <p className="text-gray-600">
-            <span className="font-semibold">Driver ID:</span> {driverData.driverID}
+            <span className="font-semibold">Driver ID:</span> Angel Cabrera
           </p>
           <p className="text-gray-600">
             <span className="font-semibold">Distance:</span> {driverData.distance}
           </p>
-          <button
-            className="bg-green-500 text-white rounded-lg py-2 px-4 hover:bg-green-600"
-            onClick={handleAcceptRide}
-          >
-            Accept Ride
-          </button>
-          <button
-            className="bg-red-500 text-white rounded-lg py-2 px-4 hover:bg-red-600"
-            onClick={handleDeclineRide}
-          >
-            Decline Ride
-          </button>
         </div>
       ) : (
         <p className="text-gray-500">We’re currently looking for available drivers...</p>

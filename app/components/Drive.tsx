@@ -5,21 +5,23 @@ import Container from './Container';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 import { BACKEND_URL } from '../config/config';
+import Modal from './modals/Modal';
+import toast from 'react-hot-toast';
 
 const Drive = () => {
   const [isDriving, setIsDriving] = useState(false);
-  const [location, setLocation] = useState<{ lat: number | null; lng: number | null }>({ lat: null, lng: null });
   const [socket, setSocket] = useState(null);
   const [showRideRequest, setShowRideRequest] = useState(false);
+  const [acceptedRideInfo, setAcceptedRideInfo] = useState(null);
   const [riderData, setRiderData] = useState<{
     riderID?: string;
     distance?: string;
     pickupLocation?: string;
     dropoffLocation?: string;
     googleMapsLink?: string;
+    price?: string;
   }>({});
   const [driverID, setDriverID] = useState<number | null>(null);
-  const [updateInterval, setUpdateInterval] = useState<number | null>(null); // Store interval ID
 
   useEffect(() => {
     const setupSocket = async () => {
@@ -44,7 +46,7 @@ const Drive = () => {
           newSocket.emit('startDrive', { driverID: fetchedDriverID });
 
           newSocket.on('rideAcceptedNotification', (data) => {
-            console.log('Ride accepted by rider, received data:', data);
+            console.log('Ride request received:', data);
 
             const googleMapsLink = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(
               data.pickupLocation
@@ -55,11 +57,9 @@ const Drive = () => {
               distance: data.distance || 'N/A',
               pickupLocation: data.pickupLocation || 'N/A',
               dropoffLocation: data.dropoffLocation || 'N/A',
+              price: data.price || '$7.62',
               googleMapsLink,
             });
-
-            // Start periodic location updates
-            startLocationUpdates(fetchedDriverID);
 
             setShowRideRequest(true);
           });
@@ -72,128 +72,55 @@ const Drive = () => {
 
     setupSocket();
 
-    // Cleanup function
     return () => {
       if (socket) {
         socket.disconnect();
         setSocket(null);
       }
-      stopLocationUpdates(); // Stop location updates on unmount or driving stop
     };
   }, [isDriving]);
 
-  const startLocationUpdates = (driverID: number) => {
-    const interval = setInterval(async () => {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          async (position) => {
-            const userLat = position.coords.latitude;
-            const userLng = position.coords.longitude;
+  const handleAcceptRide = () => {
+    console.log('Ride accepted by driver:', riderData);
+    // Emit event to notify backend that ride is accepted
+    if (socket && driverID && riderData.riderID) {
+      socket.emit('rideAccepted', {
+        driverID,
+        riderID: riderData.riderID,
+      });
 
-            try {
-              await axios.put(
-                `${BACKEND_URL}/drivers/${driverID}/location`,
-                { userLat, userLng },
-                { headers: { 'Content-Type': 'application/json' } }
-              );
-              console.log('Driver location updated:', { userLat, userLng });
-            } catch (error) {
-              console.error('Error updating driver location:', error);
-            }
-          },
-          (error) => {
-            console.error('Error fetching location:', error);
-          }
-        );
-      }
-    }, 5000); // Update every 5 seconds
+      // Display toast notification
+      toast.success('Ride accepted!');
 
-    setUpdateInterval(interval);
+      // Update accepted ride info on the page
+      setAcceptedRideInfo({ ...riderData });
+
+      // Hide modal
+      setShowRideRequest(false);
+    }
   };
 
-  const stopLocationUpdates = () => {
-    if (updateInterval) {
-      clearInterval(updateInterval);
-      setUpdateInterval(null);
-      console.log('Stopped periodic location updates.');
-    }
+  const handleDeclineRide = () => {
+    console.log('Ride declined by driver:', riderData);
+    setShowRideRequest(false); // Close modal after declining
   };
 
   const handleStartDrive = () => {
     setIsDriving(true);
     console.log('Driver started looking for a ride...');
-    const driverEmail = localStorage.getItem('userEmail');
-    if (!driverEmail) {
-      console.error("User email not found in local storage");
-      alert("Please log in again.");
-      return;
-    }
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const userLat = position.coords.latitude;
-          const userLng = position.coords.longitude;
-
-          setLocation({ lat: userLat, lng: userLng });
-          console.log('Driver location:', { userLat, userLng });
-
-          try {
-            const idResponse = await axios.get(
-              `${BACKEND_URL}/users/${driverEmail}/id`
-            );
-            const fetchedDriverID = idResponse.data.userID;
-            setDriverID(fetchedDriverID);
-
-            await axios.put(
-              `${BACKEND_URL}/users/${fetchedDriverID}/activate`,
-              { headers: { 'Content-Type': 'application/json' } }
-            );
-
-            console.log('User activated successfully.');
-
-            await axios.put(
-              `${BACKEND_URL}/drivers/${fetchedDriverID}/location`,
-              { userLat, userLng },
-              { headers: { 'Content-Type': 'application/json' } }
-            );
-
-            console.log('Driver location updated successfully.');
-          } catch (error) {
-            console.error('Error activating or updating driver location:', error);
-            alert('Failed to activate or update driver location on the server.');
-          }
-        },
-        (error) => {
-          console.error('Error getting location:', error);
-          alert('Location access denied or unavailable.');
-        }
-      );
-    } else {
-      alert('Geolocation is not supported by this browser.');
-    }
   };
 
-  const handleStopDrive = async () => {
+  const handleStopDrive = () => {
     setIsDriving(false);
-    stopLocationUpdates(); // Stop periodic location updates
-    console.log('Driver stopped looking for a ride');
-
-    if (driverID !== null) {
-      await axios.put(
-        `${BACKEND_URL}/users/${driverID}/deactivate`,
-        { headers: { 'Content-Type': 'application/json' } }
-      );
-      console.log('User deactivated successfully.');
-    } else {
-      console.error("driverID is not defined.");
-    }
-
     if (socket) {
       socket.disconnect();
       setSocket(null);
     }
-    setShowRideRequest(false);
-    setRiderData({});
+
+    // Show "Ride complete" toast notification and clear ride info
+    toast.success('Ride complete!');
+    setAcceptedRideInfo(null);
+    console.log('Driver stopped looking for a ride');
   };
 
   return (
@@ -217,24 +144,80 @@ const Drive = () => {
             </button>
           )}
         </div>
+
         {isDriving && (
           <div className="mt-5">
             <p className="text-xl text-gray-700">Searching for Drive...</p>
           </div>
         )}
-        {showRideRequest && riderData && (
+
+        {/* Modal for Ride Request */}
+        {showRideRequest && (
+          <Modal
+            isOpen={showRideRequest}
+            title="Ride Request"
+            onClose={() => setShowRideRequest(false)}
+            body={
+              <div className="space-y-4">
+                <p className="text-gray-600">
+                  <span className="font-semibold">Rider ID:</span> {riderData.riderID}
+                </p>
+                <p className="text-gray-600">
+                  <span className="font-semibold">Distance:</span> {riderData.distance}
+                </p>
+                <p className="text-gray-600">
+                  <span className="font-semibold">Pickup Location:</span> {riderData.pickupLocation}
+                </p>
+                <p className="text-gray-600">
+                  <span className="font-semibold">Dropoff Location:</span> {riderData.dropoffLocation}
+                </p>
+                <p className="text-gray-600">
+                  <span className="font-semibold">Price:</span> {riderData.price}
+                </p>
+                {riderData.googleMapsLink && (
+                  <a
+                    href={riderData.googleMapsLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-500 underline"
+                  >
+                    View Directions in Google Maps
+                  </a>
+                )}
+                <div className="flex justify-around">
+                  <button
+                    className="bg-green-500 text-white rounded-lg py-2 px-4 hover:bg-green-600"
+                    onClick={handleAcceptRide}
+                  >
+                    Accept
+                  </button>
+                  <button
+                    className="bg-red-500 text-white rounded-lg py-2 px-4 hover:bg-red-600"
+                    onClick={handleDeclineRide}
+                  >
+                    Decline
+                  </button>
+                </div>
+              </div>
+            }
+          />
+        )}
+
+        {/* Accepted Ride Info */}
+        {acceptedRideInfo && (
           <div className="mt-10 text-center">
-            <h2 className="text-xl font-semibold">Ride Request</h2>
-            <p className="mt-2">Rider ID: {riderData.riderID}</p>
-            <p>Distance: {riderData.distance}</p>
-            <p>Pickup Location: {riderData.pickupLocation}</p>
-            <p>Dropoff Location: {riderData.dropoffLocation}</p>
-            {riderData.googleMapsLink && (
+            <h2 className="text-2xl font-semibold mb-4">Accepted Ride Information</h2>
+            <p><strong>Rider ID:</strong> {acceptedRideInfo.riderID}</p>
+            <p><strong>Pickup Location:</strong> {acceptedRideInfo.pickupLocation}</p>
+            <p><strong>Dropoff Location:</strong> {acceptedRideInfo.dropoffLocation}</p>
+            <p><strong>Distance:</strong> {acceptedRideInfo.distance}</p>
+            <p><strong>Price:</strong> {acceptedRideInfo.price}</p>
+            {acceptedRideInfo.googleMapsLink && (
               <a
-                href={riderData.googleMapsLink}
+                href={acceptedRideInfo.googleMapsLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-500 underline mt-2"
+                className="text-blue-500 underline"
               >
                 View Directions in Google Maps
               </a>
