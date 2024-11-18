@@ -41,8 +41,9 @@ const PaymentModal: React.FC<{ pickupLat: number; pickupLng: number; dropoffLat:
             throw new Error(data.message || 'Failed to calculate price');
           }
     
-          const calculatedCost = data.price * 100; // Convert to cents
-    
+          const calculatedCost = Number(data.price) * 100; // Convert to cents
+          localStorage.setItem('ridePrice', Number(data.price).toFixed(2));
+
       const response = await fetch(`${BACKEND_URL}/payments/create-checkout-session`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

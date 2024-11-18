@@ -8,6 +8,8 @@ import useSearchingModal from '@/app/hooks/useSearchingModal'; // Import Searchi
 import Modal from './Modal';
 import toast from 'react-hot-toast';
 import usePaymentModal from '@/app/hooks/usePaymentModal';
+import { io } from 'socket.io-client';
+import { BACKEND_URL } from '@/app/config/config'; // Assuming BACKEND_URL is already configured
 
 const RidePriceModal = () => {
   const ridePriceModal = useRidePriceModal();
@@ -33,6 +35,25 @@ const RidePriceModal = () => {
   // onSubmit handler remains the same, but now we use router that was defined outside
   const onSubmit: SubmitHandler<FieldValues> = (data) => {
     setIsLoading(true);
+
+    // Store the cost in localStorage
+    console.log('Cost before storing in localStorage:', cost);
+
+    if (cost) {
+      localStorage.setItem('ridePrice', cost.toString());
+      console.log('Ride price stored in localStorage:', cost);
+
+      // Emit the price to the driver via WebSocket
+  //    const socket = io(BACKEND_URL); // Establish a socket connection
+   //   socket.emit('ridePriceUpdate', { price: cost });
+    //  console.log('Ride price emitted via WebSocket:', { price: cost });
+
+      // Disconnect the socket after emitting
+      //socket.disconnect();
+    } else {
+      console.error('Cost is undefined and cannot be stored.');
+    }
+
 
     // Close RidePriceModal and potentially open SearchingModal
     ridePriceModal.onClose();

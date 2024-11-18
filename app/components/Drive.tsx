@@ -47,22 +47,38 @@ const Drive = () => {
 
           newSocket.on('rideAcceptedNotification', (data) => {
             console.log('Ride request received:', data);
-
+          
             const googleMapsLink = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(
               data.pickupLocation
             )}&destination=${encodeURIComponent(data.dropoffLocation)}`;
-
-            setRiderData({
-              riderID: data.riderID || 'N/A',
-              distance: data.distance || 'N/A',
-              pickupLocation: data.pickupLocation || 'N/A',
-              dropoffLocation: data.dropoffLocation || 'N/A',
-              price: data.price || '$7.62',
-              googleMapsLink,
-            });
-
-            setShowRideRequest(true);
+          
+            try {
+              // Use the price sent via the socket event (from the rider's side)
+              const price = data.price;
+          
+              if (!price) {
+                throw new Error('Price is missing from rideAcceptedNotification data');
+              }
+          
+              // Update riderData with the received price
+              setRiderData({
+                riderID: data.riderID || 'N/A',
+                distance: data.distance || 'N/A',
+                pickupLocation: data.pickupLocation || 'N/A',
+                dropoffLocation: data.dropoffLocation || 'N/A',
+                price: `${price}`, // Use the price received via the socket
+                googleMapsLink,
+              });
+          
+              setShowRideRequest(true);
+            } catch (error) {
+              console.error('Error handling rideAcceptedNotification:', error);
+              toast.error('Failed to retrieve the price for the ride.');
+            }
           });
+          
+          
+          
         } catch (error) {
           console.error('Error fetching driver ID:', error);
           alert('Failed to start drive due to an error fetching the driver ID.');
