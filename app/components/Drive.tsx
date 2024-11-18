@@ -279,28 +279,33 @@ const Drive = () => {
         )}
 
         {/* Accepted Ride Info */}
-            {acceptedRideInfo && (
-      <div className="mt-10 text-center">
-        <h2 className="text-2xl font-semibold mb-4">Accepted Ride Information</h2>
-        <p><strong>Rider ID:</strong> {acceptedRideInfo.riderID}</p>
-        <p><strong>Pickup Location:</strong> {acceptedRideInfo.pickupLocation}</p>
-        <p><strong>Dropoff Location:</strong> {acceptedRideInfo.dropoffLocation}</p>
-        <p><strong>Distance:</strong> {acceptedRideInfo.distance}</p>
-        <p><strong>Price:</strong> {acceptedRideInfo.price}</p>
-        {acceptedRideInfo.googleMapsLink && (
-          <div className="mt-4">
-            <iframe
-              src={acceptedRideInfo.googleMapsLink}
-              width="100%"
-              height="400"
-              allowFullScreen
-              loading="lazy"
-              style={{ border: 0 }}
-            />
-          </div>
-        )}
+        {acceptedRideInfo && (
+  <div className="mt-10 text-center">
+    <h2 className="text-2xl font-semibold mb-4">Accepted Ride Information</h2>
+    <p><strong>Rider ID:</strong> {acceptedRideInfo.riderID}</p>
+    <p><strong>Pickup Location:</strong> {acceptedRideInfo.pickupLocation}</p>
+    <p><strong>Dropoff Location:</strong> {acceptedRideInfo.dropoffLocation}</p>
+    <p><strong>Distance:</strong> {acceptedRideInfo.distance}</p>
+    <p><strong>Price:</strong> {acceptedRideInfo.price}</p>
+    {acceptedRideInfo.pickupLocation && acceptedRideInfo.dropoffLocation && (
+      <div className="mt-4">
+        <iframe
+          src={`https://www.google.com/maps/embed/v1/directions?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&origin=${encodeURIComponent(
+            acceptedRideInfo.pickupLocation
+          )}&destination=${encodeURIComponent(
+            acceptedRideInfo.dropoffLocation
+          )}`}
+          width="100%"
+          height="400"
+          allowFullScreen
+          loading="lazy"
+          style={{ border: 0 }}
+        />
       </div>
     )}
+  </div>
+)}
+
 
       </div>
     </Container>
