@@ -42,7 +42,7 @@ const PaymentModal: React.FC<{ pickupLat: number; pickupLng: number; dropoffLat:
     
           const calculatedCost = data.price * 100; // Convert to cents
     
-      const response = await fetch('http://localhost:3000/payments/create-checkout-session', {
+      const response = await fetch('https://octopus-app-agn55.ondigitalocean.app/payments/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount: calculatedCost }),
