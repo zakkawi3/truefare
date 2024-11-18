@@ -7,6 +7,7 @@ import { FieldValues, useForm } from 'react-hook-form';
 import useSearchingModal from '@/app/hooks/useSearchingModal';
 import Modal from './Modal';
 import toast from 'react-hot-toast';
+import { BACKEND_URL } from '@/app/config/config';
 
 const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
   const searchingModal = useSearchingModal();
@@ -33,10 +34,10 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
       return;
     }
   
-    console.log('Polling https://octopus-app-agn55.ondigitalocean.app/riders/closestDriver', userCoords);
+    console.log('Polling ${BACKEND_URL}/riders/closestDriver', userCoords);
     setIsLoading(true);
     try {
-      const response = await axios.get('https://octopus-app-agn55.ondigitalocean.app/riders/closestDriver', { 
+      const response = await axios.get(`${BACKEND_URL}/riders/closestDriver`, { 
         params: {
           userLat: hardcodedLat,
           userLng: hardcodedLng,
@@ -63,7 +64,7 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
   useEffect(() => {
     if (searchingModal.isOpen) {
       console.log("Opening WebSocket connection...");
-      const newSocket = io('https://octopus-app-agn55.ondigitalocean.app');
+      const newSocket = io(`${BACKEND_URL}`);
       setSocket(newSocket);
 
       newSocket.on('rideAssigned', (data) => {

@@ -2,6 +2,7 @@ import NextAuth, { AuthOptions } from "next-auth"
 import GithubProvider from "next-auth/providers/github"
 import GoogleProvider from "next-auth/providers/google"
 import CredentialsProvider from "next-auth/providers/credentials"
+import { BACKEND_URL } from '../../../app/config/config';
 
 var out_email = null;
 
@@ -28,7 +29,7 @@ export const authOptions: AuthOptions = {
 
                 // Call external API to verify user credentials
                 out_email = credentials.email;
-                const response = await fetch('https://octopus-app-agn55.ondigitalocean.app/users/verify', {
+                const response = await fetch(`${BACKEND_URL}/users/verify`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

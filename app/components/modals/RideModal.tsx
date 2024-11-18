@@ -12,6 +12,7 @@ import useRideModal from '@/app/hooks/useRideModal';
 import Modal from './Modal';
 import toast from 'react-hot-toast';
 import Button from '../Button';
+import { BACKEND_URL } from '../../config/config';
 
 const RideModal = () => {
   const rideModal = useRideModal();
@@ -31,7 +32,7 @@ const RideModal = () => {
   const onSubmit: SubmitHandler<FieldValues> = (data) =>  {
     setIsLoading(true);
     
-    axios.post('/api/register', data)
+    axios.post(`$/api/register`, data)
         .then(() => {
             rideModal.onClose();
         })

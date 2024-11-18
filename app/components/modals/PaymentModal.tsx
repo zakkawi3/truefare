@@ -7,6 +7,7 @@ import { toast } from 'react-hot-toast';
 import usePaymentModal from '@/app/hooks/usePaymentModal';
 import useSearchingModal from '@/app/hooks/useSearchingModal';
 import Modal from './Modal';
+import { BACKEND_URL } from '../../config/config';
 
 if (!process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY) {
   throw new Error('NEXT_PUBLIC_STRIPE_PUBLIC_KEY is not set');
@@ -32,7 +33,7 @@ const PaymentModal: React.FC<{ pickupLat: number; pickupLng: number; dropoffLat:
 
     try {
         const res = await fetch(
-            `https://octopus-app-agn55.ondigitalocean.app/riders/calculatePrice?pickupLat=${pickupLat}&pickupLng=${pickupLng}&dropoffLat=${dropoffLat}&dropoffLng=${dropoffLng}`
+            `${BACKEND_URL}/riders/calculatePrice?pickupLat=${pickupLat}&pickupLng=${pickupLng}&dropoffLat=${dropoffLat}&dropoffLng=${dropoffLng}`
           );
           const data = await res.json();
     
@@ -42,7 +43,7 @@ const PaymentModal: React.FC<{ pickupLat: number; pickupLng: number; dropoffLat:
     
           const calculatedCost = data.price * 100; // Convert to cents
     
-      const response = await fetch('https://octopus-app-agn55.ondigitalocean.app/payments/create-checkout-session', {
+      const response = await fetch(`${BACKEND_URL}/payments/create-checkout-session`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount: calculatedCost }),

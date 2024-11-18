@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Container from './Container';
 import axios from 'axios';
 import { io } from 'socket.io-client';
+import { BACKEND_URL } from '../config/config';
 
 const Drive = () => {
   const [isDriving, setIsDriving] = useState(false);
@@ -23,7 +24,7 @@ const Drive = () => {
   useEffect(() => {
     const setupSocket = async () => {
       if (isDriving) {
-        const newSocket = io('https://octopus-app-agn55.ondigitalocean.app/');
+        const newSocket = io(`${BACKEND_URL}`);
         setSocket(newSocket);
 
         const driverEmail = localStorage.getItem('userEmail');
@@ -35,7 +36,7 @@ const Drive = () => {
 
         try {
           const idResponse = await axios.get(
-            `https://octopus-app-agn55.ondigitalocean.app/users/${driverEmail}/id`
+            `${BACKEND_URL}/users/${driverEmail}/id`
           );
           const fetchedDriverID = idResponse.data.userID;
           setDriverID(fetchedDriverID);
@@ -91,7 +92,7 @@ const Drive = () => {
 
             try {
               await axios.put(
-                `https://octopus-app-agn55.ondigitalocean.app/drivers/${driverID}/location`,
+                `${BACKEND_URL}/drivers/${driverID}/location`,
                 { userLat, userLng },
                 { headers: { 'Content-Type': 'application/json' } }
               );
@@ -138,20 +139,20 @@ const Drive = () => {
 
           try {
             const idResponse = await axios.get(
-              `https://octopus-app-agn55.ondigitalocean.app/users/${driverEmail}/id`
+              `${BACKEND_URL}/users/${driverEmail}/id`
             );
             const fetchedDriverID = idResponse.data.userID;
             setDriverID(fetchedDriverID);
 
             await axios.put(
-              `https://octopus-app-agn55.ondigitalocean.app/users/${fetchedDriverID}/activate`,
+              `${BACKEND_URL}/users/${fetchedDriverID}/activate`,
               { headers: { 'Content-Type': 'application/json' } }
             );
 
             console.log('User activated successfully.');
 
             await axios.put(
-              `https://octopus-app-agn55.ondigitalocean.app/drivers/${fetchedDriverID}/location`,
+              `${BACKEND_URL}/drivers/${fetchedDriverID}/location`,
               { userLat, userLng },
               { headers: { 'Content-Type': 'application/json' } }
             );
@@ -179,7 +180,7 @@ const Drive = () => {
 
     if (driverID !== null) {
       await axios.put(
-        `https://octopus-app-agn55.ondigitalocean.app/users/${driverID}/deactivate`,
+        `${BACKEND_URL}/users/${driverID}/deactivate`,
         { headers: { 'Content-Type': 'application/json' } }
       );
       console.log('User deactivated successfully.');

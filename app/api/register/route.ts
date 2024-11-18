@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
 import { NextResponse } from "next/server";
+import { BACKEND_URL } from '@/app/config/config';
 
 export async function POST(request: Request) {
     try {
@@ -7,7 +8,7 @@ export async function POST(request: Request) {
 
         // Make the request to the external API without hashing the password
         console.log(cardNumber);
-        const response = await fetch('https://octopus-app-agn55.ondigitalocean.app/users/create', {
+        const response = await fetch(`${BACKEND_URL}/users/create`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

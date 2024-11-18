@@ -16,6 +16,7 @@ import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Confetti from 'react-confetti';
 import { useWindowSize } from 'react-use';
+import { BACKEND_URL } from '../../config/config';
 
 const RegisterModal = () => {
     const router = useRouter();
@@ -38,7 +39,7 @@ const RegisterModal = () => {
 
         try {
             // Make the API call to register the user
-            await axios.post('/api/register', data);
+            await axios.post(`/api/register`, data);
             toast.success('Registered successfully');
             setIsConfettiActive(true); // Activate confetti on successful registration
 

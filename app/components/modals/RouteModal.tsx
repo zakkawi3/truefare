@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation';
 import GoogleMapReact from 'google-map-react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { BACKEND_URL } from '@/app/config/config';
+
 
 const RouteModal = () => {
   const router = useRouter();
@@ -15,7 +17,7 @@ const RouteModal = () => {
     const fetchDriverLocation = async () => {
       try {
         console.log('Fetching driver location from backend...');
-        const response = await axios.get('https://octopus-app-agn55.ondigitalocean.app/drivers/location', {
+        const response = await axios.get(`${BACKEND_URL}/drivers/location`, {
           params: { driverID: driver }, // Passing driverID as a query parameter
         });
         const { coordinates } = response.data.location; // Assuming response contains { "type": "Point", "coordinates": [lng, lat] }

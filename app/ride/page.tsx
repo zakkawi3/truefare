@@ -10,6 +10,7 @@ import { io } from 'socket.io-client';
 import SearchingModal from '../components/modals/SearchingModal';
 import PaymentModal from '../components/modals/PaymentModal'; // Import PaymentModal
 import RidePriceModal from '../components/modals/RidePriceModal'; // Import RidePriceModal
+import { BACKEND_URL } from '../config/config';
 
 const center = { lat: 33.7501, lng: -84.3880 }; // Default map center
 
@@ -40,7 +41,7 @@ export default function Ride() {
   });
 
   useEffect(() => {
-    const socket = io('https://octopus-app-agn55.ondigitalocean.app'); // Update with your backend URL if different
+    const socket = io(`${BACKEND_URL}`); // Update with your backend URL if different
     socket.on('connect', () => {
       console.log('Connected to WebSocket server');
     });
@@ -89,7 +90,7 @@ export default function Ride() {
   
     // Call the backend API to get the calculated price
     try {
-      const response = await fetch(`https://octopus-app-agn55.ondigitalocean.app/riders/calculatePrice?pickupLat=${pickupLat}&pickupLng=${pickupLng}&dropoffLat=${dropoffLat}&dropoffLng=${dropoffLng}`);
+      const response = await fetch(`${BACKEND_URL}/riders/calculatePrice?pickupLat=${pickupLat}&pickupLng=${pickupLng}&dropoffLat=${dropoffLat}&dropoffLng=${dropoffLng}`);
       const data = await response.json();
   
       if (response.ok) {
