@@ -32,17 +32,17 @@ const PaymentModal: React.FC<{ pickupLat: number; pickupLng: number; dropoffLat:
     sessionInProgress.current = true;
 
     try {
-        const res = await fetch(
-            `${BACKEND_URL}/riders/calculatePrice?pickupLat=${pickupLat}&pickupLng=${pickupLng}&dropoffLat=${dropoffLat}&dropoffLng=${dropoffLng}`
-          );
-          const data = await res.json();
-    
-          if (!res.ok) {
-            throw new Error(data.message || 'Failed to calculate price');
-          }
-    
-          const calculatedCost = Number(data.price) * 100; // Convert to cents
-          localStorage.setItem('ridePrice', Number(data.price).toFixed(2));
+      const res = await fetch(
+        `${BACKEND_URL}/riders/calculatePrice?pickupLat=${pickupLat}&pickupLng=${pickupLng}&dropoffLat=${dropoffLat}&dropoffLng=${dropoffLng}`
+      );
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || 'Failed to calculate price');
+      }
+
+      const calculatedCost = Number(data.price) * 100; // Convert to cents
+      localStorage.setItem('ridePrice', Number(data.price).toFixed(2));
 
       const response = await fetch(`${BACKEND_URL}/payments/create-checkout-session`, {
         method: 'POST',
@@ -67,23 +67,26 @@ const PaymentModal: React.FC<{ pickupLat: number; pickupLng: number; dropoffLat:
       fetchClientSecret();
     }
   }, [paymentModal.isOpen, clientSecret, fetchClientSecret]);
-  
 
-  const handleCloseModal = () => {
-    setClientSecret(null);
-    setSessionId(null);
-    paymentModal.onClose();
-    searchingModal.onOpen();
-  };
+  // Define the onClose method
+  const handleCloseModal = useCallback(() => {
+    setClientSecret(null); // Reset the client secret
+    setSessionId(null); // Reset the session ID
+    paymentModal.onClose(); // Close the payment modal
+  }, [paymentModal, searchingModal]);
 
   return (
     <Modal
       isOpen={paymentModal.isOpen}
       title="Payment"
-      actionLabel="Close" // Only for the Close button
+      actionLabel="Close"
+      onClose={handleCloseModal} // Pass the onClose method to Modal
       onSubmit={handleCloseModal}
-      style={{maxHeight: '100vh', // Fixed max height for the modal
-        maxWidth: '100%',}}
+      style={{
+        maxHeight: '100vh',
+        maxWidth: '100%',
+        overflowY: 'auto', // Ensures scrolling within modal
+      }}
     >
       {clientSecret && (
         <EmbeddedCheckoutProvider stripe={stripePromise} options={{ clientSecret }}>
@@ -92,7 +95,6 @@ const PaymentModal: React.FC<{ pickupLat: number; pickupLng: number; dropoffLat:
       )}
     </Modal>
   );
-  
 };
 
 export default React.memo(PaymentModal);
