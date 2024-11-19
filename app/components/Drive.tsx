@@ -251,7 +251,8 @@ const Drive = () => {
             body={
               <div className="space-y-4">
                 <p className="text-gray-600">
-                  <span className="font-semibold">Rider ID:</span> {riderData.riderID}
+                  {/* <span className="font-semibold">Rider ID:</span> {riderData.riderID} */}
+                  <span className="font-semibold">Rider ID:</span> Angel Cabrera
                 </p>
                 <p className="text-gray-600">
                   <span className="font-semibold">Distance:</span> {riderData.distance}
@@ -298,7 +299,8 @@ const Drive = () => {
         {acceptedRideInfo && (
   <div className="mt-10 text-center">
     <h2 className="text-2xl font-semibold mb-4">Accepted Ride Information</h2>
-    <p><strong>Rider ID:</strong> {acceptedRideInfo.riderID}</p>
+    {/* <p><strong>Rider ID:</strong> {acceptedRideInfo.riderID}</p> */}
+    <p><strong>Rider ID:</strong> Angel Cabrera</p>
     <p><strong>Pickup Location:</strong> {acceptedRideInfo.pickupLocation}</p>
     <p><strong>Dropoff Location:</strong> {acceptedRideInfo.dropoffLocation}</p>
     <p><strong>Distance:</strong> {acceptedRideInfo.distance}</p>

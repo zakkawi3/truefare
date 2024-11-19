@@ -73,6 +73,7 @@ const PaymentModal: React.FC<{ pickupLat: number; pickupLng: number; dropoffLat:
     setClientSecret(null); // Reset the client secret
     setSessionId(null); // Reset the session ID
     paymentModal.onClose(); // Close the payment modal
+    searchingModal.onOpen();
   }, [paymentModal, searchingModal]);
 
   return (
@@ -80,7 +81,7 @@ const PaymentModal: React.FC<{ pickupLat: number; pickupLng: number; dropoffLat:
       isOpen={paymentModal.isOpen}
       title="Payment"
       actionLabel="Close"
-      onClose={handleCloseModal} // Pass the onClose method to Modal
+      onClose={() => paymentModal.onClose()} // Pass the onClose method to Modal
       onSubmit={handleCloseModal}
       style={{
         maxHeight: '100vh',
