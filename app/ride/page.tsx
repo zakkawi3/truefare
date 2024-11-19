@@ -224,6 +224,10 @@ export default function Ride() {
         </div> */}
       </div>
 
+      {originCoords && (
+        <SearchingModal userCoords={originCoords} pickupLocation={pickupLocation} dropoffLocation={dropoffLocation} />
+      )}
+
       {/* Right Side: Map Section */}
       <div className="flex w-full lg:w-1/2 justify-center">
         <div className="w-full h-[300px] sm:h-[400px] lg:w-[450px] lg:h-[450px] rounded-lg bg-gray-200">
@@ -252,9 +256,7 @@ export default function Ride() {
       </div>
     </div>
 
-    {originCoords && (
-      <SearchingModal userCoords={originCoords} pickupLocation={pickupLocation} dropoffLocation={dropoffLocation} />
-    )}
+    
 
     {pickupLat && pickupLng && dropoffLat && dropoffLng && (
       <PaymentModal pickupLat={pickupLat} pickupLng={pickupLng} dropoffLat={dropoffLat} dropoffLng={dropoffLng} />
