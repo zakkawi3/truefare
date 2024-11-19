@@ -33,6 +33,7 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
   }, []);
 
   const pollClosestDriver = useCallback(async () => {
+    console.log("Polling closest driver");
     if (!userCoords?.lat || !userCoords?.lng) {
       console.error("User coordinates are missing:", userCoords);
       return;

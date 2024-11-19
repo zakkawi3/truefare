@@ -46,7 +46,8 @@ const RegisterModal = () => {
             await axios.post(`/api/register`, payload);
             toast.success('Registered successfully');
             setIsConfettiActive(true); // Activate confetti on successful registration
-
+            console.log("stored useremail to local storage from sign up page")
+            localStorage.setItem('userEmail', data.email);
             // Automatically log the user in after registration
             const loginResponse = await signIn('credentials', {
                 email: data.email,

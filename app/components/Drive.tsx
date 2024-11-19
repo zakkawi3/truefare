@@ -15,6 +15,7 @@ const Drive = () => {
   const [acceptedRideInfo, setAcceptedRideInfo] = useState(null);
   const [riderData, setRiderData] = useState<{
     riderID?: string;
+    riderName?: string;
     distance?: string;
     pickupLocation?: string;
     dropoffLocation?: string;
@@ -63,6 +64,7 @@ const Drive = () => {
               // Update riderData with the received price
               setRiderData({
                 riderID: data.riderID || 'N/A',
+                riderName: data.riderName || 'N/A',
                 distance: data.distance || 'N/A',
                 pickupLocation: data.pickupLocation || 'N/A',
                 dropoffLocation: data.dropoffLocation || 'N/A',
@@ -252,7 +254,7 @@ const Drive = () => {
               <div className="space-y-4">
                 <p className="text-gray-600">
                   {/* <span className="font-semibold">Rider ID:</span> {riderData.riderID} */}
-                  <span className="font-semibold">Rider ID:</span> Angel Cabrera
+                  <span className="font-semibold">Rider Name</span> {riderData.riderName}
                 </p>
                 <p className="text-gray-600">
                   <span className="font-semibold">Distance:</span> {riderData.distance}
@@ -299,8 +301,7 @@ const Drive = () => {
         {acceptedRideInfo && (
   <div className="mt-10 text-center">
     <h2 className="text-2xl font-semibold mb-4">Accepted Ride Information</h2>
-    {/* <p><strong>Rider ID:</strong> {acceptedRideInfo.riderID}</p> */}
-    <p><strong>Rider ID:</strong> Angel Cabrera</p>
+    <p><strong>Rider Name:</strong> {acceptedRideInfo.riderName}</p>
     <p><strong>Pickup Location:</strong> {acceptedRideInfo.pickupLocation}</p>
     <p><strong>Dropoff Location:</strong> {acceptedRideInfo.dropoffLocation}</p>
     <p><strong>Distance:</strong> {acceptedRideInfo.distance}</p>
