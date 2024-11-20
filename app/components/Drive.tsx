@@ -13,6 +13,9 @@ const Drive = () => {
   const [socket, setSocket] = useState(null);
   const [showRideRequest, setShowRideRequest] = useState(false);
   const [acceptedRideInfo, setAcceptedRideInfo] = useState(null);
+  const [hasAcceptedRide, setHasAcceptedRide] = useState(false);
+  const [currentRideRequest, setCurrentRideRequest] = useState(null);
+
   const [riderData, setRiderData] = useState<{
     riderID?: string;
     riderName?: string;
@@ -23,6 +26,7 @@ const Drive = () => {
     price?: string;
   }>({});
   const [driverID, setDriverID] = useState<number | null>(null);
+
 
   useEffect(() => {
     const setupSocket = async () => {
@@ -38,49 +42,32 @@ const Drive = () => {
         }
 
         try {
-          const idResponse = await axios.get(
-            `${BACKEND_URL}/users/${driverEmail}/id`
-          );
+          const idResponse = await axios.get(`${BACKEND_URL}/users/${driverEmail}/id`);
           const fetchedDriverID = idResponse.data.userID;
           setDriverID(fetchedDriverID);
 
           newSocket.emit('startDrive', { driverID: fetchedDriverID });
 
           newSocket.on('rideAcceptedNotification', (data) => {
-            console.log('Ride request received:', data);
-          
-            const googleMapsLink = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(
-              data.pickupLocation
-            )}&destination=${encodeURIComponent(data.dropoffLocation)}`;
-          
-            try {
-              // Use the price sent via the socket event (from the rider's side)
-              const price = data.price;
-          
-              if (!price) {
-                throw new Error('Price is missing from rideAcceptedNotification data');
-              }
-          
-              // Update riderData with the received price
-              setRiderData({
-                riderID: data.riderID || 'N/A',
-                riderName: data.riderName || 'N/A',
-                distance: data.distance || 'N/A',
-                pickupLocation: data.pickupLocation || 'N/A',
-                dropoffLocation: data.dropoffLocation || 'N/A',
-                price: `${price}`, // Use the price received via the socket
-                googleMapsLink,
-              });
-          
+            if (!currentRideRequest && !acceptedRideInfo) {
+              const rideRequest = {
+                riderID: data.riderID,
+                riderName: data.riderName,
+                distance: data.distance,
+                pickupLocation: data.pickupLocation,
+                dropoffLocation: data.dropoffLocation,
+                price: data.price,
+                googleMapsLink: `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(
+                  data.pickupLocation
+                )}&destination=${encodeURIComponent(data.dropoffLocation)}`
+              };
+              
+              setCurrentRideRequest(rideRequest);
+              setRiderData(rideRequest);
               setShowRideRequest(true);
-            } catch (error) {
-              console.error('Error handling rideAcceptedNotification:', error);
-              toast.error('Failed to retrieve the price for the ride.');
             }
           });
-          
-          
-          
+
         } catch (error) {
           console.error('Error fetching driver ID:', error);
           alert('Failed to start drive due to an error fetching the driver ID.');
@@ -93,60 +80,42 @@ const Drive = () => {
     return () => {
       if (socket) {
         socket.disconnect();
-        setSocket(null);
       }
     };
-  }, [isDriving]);
+  }, [isDriving, currentRideRequest, acceptedRideInfo]);
 
-const handleAcceptRide = async () => {
-  console.log('Ride accepted by driver:', riderData);
+  const handleAcceptRide = async () => {
+    if (!socket || !driverID || !currentRideRequest?.riderID) {
+      console.error('Socket or ride data is missing.');
+      return;
+    }
 
-  if (!socket || !driverID || !riderData.riderID) {
-    console.error('Socket or driver data is missing.');
-    return;
-  }
+    setShowRideRequest(false);
 
-  // Close the modal immediately
-  setShowRideRequest(false);
-  console.log('Modal closed immediately.');
+    try {
+      await axios.put(
+        `${BACKEND_URL}/users/${driverID}/deactivate`,
+        {},
+        { headers: { 'Content-Type': 'application/json' } }
+      );
 
-  try {
-    // Emit event to notify backend that ride is accepted
-    socket.emit('rideAccepted', {
-      driverID,
-      riderID: riderData.riderID,
-    });
-    console.log('Emitted rideAccepted event.');
+      socket.emit('driverConfirmed', {
+        driverID,
+        riderID: currentRideRequest.riderID,
+        distance: currentRideRequest.distance,
+        pickupLocation: currentRideRequest.pickupLocation,
+        dropoffLocation: currentRideRequest.dropoffLocation,
+        price: currentRideRequest.price,
+      });
 
-    // Deactivate driver in the backend
-    await axios.put(
-      `${BACKEND_URL}/users/${driverID}/deactivate`,
-      {},
-      { headers: { 'Content-Type': 'application/json' } }
-    );
-    console.log('Driver status set to inactive.');
-
-    // Emit driver confirmation
-    socket.emit('driverConfirmed', {
-      driverID,
-      riderID: riderData.riderID,
-      distance: riderData.distance,
-      pickupLocation: riderData.pickupLocation,
-      dropoffLocation: riderData.dropoffLocation,
-      price: riderData.price,
-    });
-    console.log('Emitted driverConfirmed event.');
-
-    // Show success toast and update accepted ride info
-    toast.success('Ride accepted!');
-    setAcceptedRideInfo({ ...riderData });
-  } catch (error) {
-    console.error('Error handling ride acceptance:', error);
-    alert('Failed to accept the ride. Please try again.');
-  }
-};
-
-  
+      toast.success('Ride accepted!');
+      setAcceptedRideInfo(currentRideRequest);
+    } catch (error) {
+      console.error('Error handling ride acceptance:', error);
+      setCurrentRideRequest(null);
+      alert('Failed to accept the ride. Please try again.');
+    }
+  };
   
   
   
