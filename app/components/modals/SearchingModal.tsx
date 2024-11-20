@@ -18,7 +18,7 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
   const [driverData, setDriverData] = useState(null);
   const [driverDetails, setDriverDetails] = useState(null);
   const [intervalId, setIntervalId] = useState(null);
-
+  const [rideConfirmed, setRideConfirmed] = useState(false); // New state for ride confirmation
   const [riderEmail, setRiderEmail] = useState(null);
 
   // Fetch rider email from localStorage
@@ -76,18 +76,39 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
     }
   }, [userCoords, intervalId, riderEmail]);
 
+
+
+
   useEffect(() => {
     if (searchingModal.isOpen) {
       console.log("Opening WebSocket connection...");
       const newSocket = io(`${BACKEND_URL}`);
       setSocket(newSocket);
-
-      newSocket.on('rideAssigned', (data) => {
-        console.log('Driver assigned:', data);
-        setDriverData(data);
-        toast.success('Driver found! Ride assigned.', { id: 'assigned-toast' });
-      });
-
+  
+      const fetchRiderID = async () => {
+        try {
+          const riderEmail = localStorage.getItem('userEmail'); // Ensure this is stored during login/registration
+          const idResponse = await axios.get(`${BACKEND_URL}/users/${riderEmail}/id`);
+          const riderID = idResponse.data.userID;
+  
+          newSocket.emit('riderJoin', { riderID });
+  
+          // Listen for ride confirmation
+          newSocket.on('rideConfirmed', (data) => {
+            console.log('Ride confirmed by driver:', data);
+            if (data) {
+              setDriverData(data); // Update driverData with confirmed details
+              setRideConfirmed(true); // Mark the ride as confirmed
+              toast.success('Your ride has been confirmed!');
+            }
+          });
+        } catch (error) {
+          console.error('Error fetching rider ID or emitting riderJoin:', error);
+        }
+      };
+  
+      fetchRiderID();
+  
       return () => {
         console.log("Closing WebSocket connection...");
         newSocket.disconnect();
@@ -95,7 +116,21 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
       };
     }
   }, [searchingModal.isOpen]);
+  
 
+  
+  
+  
+// Stop polling after ride is confirmed
+useEffect(() => {
+  if (rideConfirmed && intervalId) {
+    console.log("Stopping polling because ride is confirmed.");
+    clearInterval(intervalId);
+    setIntervalId(null);
+    searchingModal.onClose(); // Close the modal once confirmed
+  }
+}, [rideConfirmed, intervalId]);
+  
   useEffect(() => {
     if (searchingModal.isOpen && !intervalId) {
       console.log("Starting polling interval...");
@@ -114,7 +149,7 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
 
   useEffect(() => {
     const fetchDriverDetails = async () => {
-      if (driverData?.driverID) {
+      if (driverData?.driverID && rideConfirmed) {
         try {
           const response = await axios.get(`${BACKEND_URL}/users/${driverData.driverID}`);
           console.log('Fetched driver details:', response.data);
@@ -125,6 +160,7 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
         }
       }
     };
+    
 
     fetchDriverDetails();
   }, [driverData]);
@@ -137,7 +173,7 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
 
   const handleAcceptRide = () => {
     if (socket && driverData) {
-      console.log('Driver Data is:', driverData);
+      console.log('Notifying driver about the ride:', driverData);
   
       const ridePrice = localStorage.getItem('ridePrice'); // Fetch the price from localStorage
   
@@ -149,20 +185,17 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
   
       socket.emit('acceptRide', {
         driverID: driverData.driverID,
-        riderName: driverData.riderName || 'Unknown Rider',
         riderID: driverData.riderID || 'N/A',
         distance: driverData.distance || 'Unknown distance',
         pickupLocation,
         dropoffLocation,
         price: ridePrice, // Include the ride price in the payload
       });
-  
-      toast.success('Ride accepted!');
-      searchingModal.onClose();
     } else {
-      console.error('Driver or Socket information is missing.');
+      console.error('Socket or driverData missing.');
     }
   };
+  
   
 
   const handleDeclineRide = () => {
@@ -173,17 +206,12 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
   const bodyContent = (
     <div className="flex flex-col gap-6 p-4 text-center">
       <h2 className="text-xl font-semibold text-gray-800">Searching for a driver...</h2>
-      {driverData ? (
+      {rideConfirmed && driverData ? (
         <div className="space-y-4">
-          <p className="text-lg font-medium text-green-700">Driver found!</p>
+          <p className="text-lg font-medium text-green-700">Driver confirmed your ride!</p>
           <p className="text-gray-600">
             <span className="font-semibold">Driver Name:</span> {driverDetails?.name || 'Unknown Driver'}
           </p>
-          {/*
-          <p className="text-gray-600">
-            <span className="font-semibold">Driver ID:</span> {driverDetails?.userID || 'N/A'}
-          </p>
-          */}
           <p className="text-gray-600">
             <span className="font-semibold">Distance:</span> {driverData.distance}
           </p>
@@ -192,8 +220,7 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
         <p className="text-gray-500">We’re currently looking for available drivers...</p>
       )}
     </div>
-  );
-
+  );  
   return (
     <div className="flex flex-col items-center">
       <Modal
@@ -206,24 +233,34 @@ const SearchingModal = ({ userCoords, pickupLocation, dropoffLocation }) => {
         body={bodyContent}
         actionClassName="bg-red-500 text-white hover:bg-red-600 border-red-500 font-semibold py-2 px-4 rounded-lg transition-colors"
       />
-      {driverDetails && (
-        <div className="mt-10 text-center">
-          <h2 className="text-2xl font-bold mb-4">Driver Information</h2>
+      <div className="w-full max-w-4xl">
+        {/* Driver Details Section */}
+    {/* Driver Information Section */}
+    {driverDetails && (
+      <div className="w-full lg:w-1/2 bg-gray-100 p-4 rounded-lg shadow-md mt-6">
+        <h2 className="text-xl font-semibold mb-4 text-gray-800">Driver Information</h2>
+        <div className="flex flex-col space-y-2">
           <p>
-            <strong>Driver Name:</strong> {driverDetails.name}
+            <span className="font-medium">Driver Name:</span> {driverDetails.name}
           </p>
-          {/* 
           <p>
-            <strong>Driver ID:</strong> {driverDetails.userID}
+            <span className="font-medium">Distance:</span> {driverData.distance}
           </p>
-          */}
           <p>
-            <strong>Distance:</strong> {driverData.distance}
+            <span className="font-medium">Pickup Location:</span> {driverData.pickupLocation || 'Not available'}
+          </p>
+          <p>
+            <span className="font-medium">Dropoff Location:</span> {driverData.dropoffLocation || 'Not available'}
           </p>
         </div>
-      )}
+      </div>
+    )}
+
+      </div>
     </div>
   );
+  
+  
 };
 
 export default SearchingModal;

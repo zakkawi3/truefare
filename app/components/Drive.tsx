@@ -98,38 +98,57 @@ const Drive = () => {
     };
   }, [isDriving]);
 
-  const handleAcceptRide = async () => {
-    console.log('Ride accepted by driver:', riderData);
-    if (socket && driverID && riderData.riderID) {
-      try {
-        // Emit event to notify backend that ride is accepted
-        socket.emit('rideAccepted', {
-          driverID,
-          riderID: riderData.riderID,
-        });
+const handleAcceptRide = async () => {
+  console.log('Ride accepted by driver:', riderData);
+
+  if (!socket || !driverID || !riderData.riderID) {
+    console.error('Socket or driver data is missing.');
+    return;
+  }
+
+  // Close the modal immediately
+  setShowRideRequest(false);
+  console.log('Modal closed immediately.');
+
+  try {
+    // Emit event to notify backend that ride is accepted
+    socket.emit('rideAccepted', {
+      driverID,
+      riderID: riderData.riderID,
+    });
+    console.log('Emitted rideAccepted event.');
+
+    // Deactivate driver in the backend
+    await axios.put(
+      `${BACKEND_URL}/users/${driverID}/deactivate`,
+      {},
+      { headers: { 'Content-Type': 'application/json' } }
+    );
+    console.log('Driver status set to inactive.');
+
+    // Emit driver confirmation
+    socket.emit('driverConfirmed', {
+      driverID,
+      riderID: riderData.riderID,
+      distance: riderData.distance,
+      pickupLocation: riderData.pickupLocation,
+      dropoffLocation: riderData.dropoffLocation,
+      price: riderData.price,
+    });
+    console.log('Emitted driverConfirmed event.');
+
+    // Show success toast and update accepted ride info
+    toast.success('Ride accepted!');
+    setAcceptedRideInfo({ ...riderData });
+  } catch (error) {
+    console.error('Error handling ride acceptance:', error);
+    alert('Failed to accept the ride. Please try again.');
+  }
+};
+
   
-        // Deactivate driver in the backend
-        await axios.put(
-          `${BACKEND_URL}/users/${driverID}/deactivate`,
-          {},
-          { headers: { 'Content-Type': 'application/json' } }
-        );
-        console.log('Driver status set to inactive.');
   
-        // Display toast notification
-        toast.success('Ride accepted!');
   
-        // Update accepted ride info on the page
-        setAcceptedRideInfo({ ...riderData });
-  
-        // Hide modal
-        setShowRideRequest(false);
-      } catch (error) {
-        console.error('Error setting driver status to inactive:', error);
-        alert('Failed to update driver status to inactive.');
-      }
-    }
-  };
   
 
   const handleDeclineRide = () => {
