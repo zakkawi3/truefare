@@ -84,6 +84,26 @@ const Drive = () => {
     };
   }, [isDriving, currentRideRequest, acceptedRideInfo]);
 
+  useEffect(() => {
+    const handleBeforeUnload = async (event) => {
+      if (isDriving) {
+        event.preventDefault(); // Prevent default behavior
+        event.returnValue = ''; // Compatibility with some browsers
+  
+        // Call the existing handleStopDrive method
+        await handleStopDrive();
+      }
+    };
+  
+    // Add the event listener
+    window.addEventListener('beforeunload', handleBeforeUnload);
+  
+    // Cleanup function to remove the listener
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [isDriving, driverID, socket]); // Add dependencies
+  
   const handleAcceptRide = async () => {
     if (!socket || !driverID || !currentRideRequest?.riderID) {
       console.error('Socket or ride data is missing.');
